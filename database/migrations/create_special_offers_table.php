@@ -11,13 +11,14 @@ return new class extends Migration
         Schema::create('special_offers', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->string('badge')->default('Special');   // e.g. "Summer Deal"
+            $table->string('badge')->default('Special');
             $table->string('emoji')->default('🎉');
             $table->string('gradient')->default('linear-gradient(135deg,#7c3aed,#a21caf)');
             $table->text('description');
-            $table->string('highlight');                    // e.g. "Free grazing table upgrade for 50+ pax"
+            $table->string('highlight');
             $table->string('highlight_color')->default('#e65100');
             $table->string('highlight_bg')->default('#fff3e0');
+            $table->string('image')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
