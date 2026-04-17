@@ -8,20 +8,20 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('activity_logs', function (Blueprint $table) {
-            if (!Schema::hasColumn('activity_logs', 'user_role')) {
-                $table->string('user_role')->nullable()->after('user_name');
-            }
-            if (!Schema::hasColumn('activity_logs', 'module')) {
-                $table->string('module')->nullable()->after('action');
-            }
+        Schema::create('activity_logs', function (Blueprint $table) {
+            $table->id();
+            $table->string('action');
+            $table->text('description')->nullable();
+            $table->string('module')->nullable();
+            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
+            $table->string('user_name')->nullable();
+            $table->string('user_role')->nullable();
+            $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::table('activity_logs', function (Blueprint $table) {
-            $table->dropColumn(['user_role', 'module']);
-        });
+        Schema::dropIfExists('activity_logs');
     }
 };
