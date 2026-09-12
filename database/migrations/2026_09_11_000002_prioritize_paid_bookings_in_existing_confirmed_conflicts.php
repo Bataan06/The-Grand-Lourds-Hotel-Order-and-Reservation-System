@@ -7,9 +7,9 @@ use Illuminate\Database\Migrations\Migration;
 return new class extends Migration
 {
     /**
-     * Repair records confirmed by the old Admin flow. A reservation with a
-     * verified partial/full payment owns the slot; an overlapping unpaid one
-     * is returned to Pencil for staff review.
+     * Repair records confirmed by the old Admin flow.
+     * A reservation with partial/full payment owns the slot.
+     * Any overlapping unpaid confirmed booking is returned to Pencil.
      */
     public function up(): void
     {
@@ -20,28 +20,50 @@ return new class extends Migration
             ->get();
 
         foreach ($securedBookings as $securedBooking) {
-            $start = Carbon::parse($securedBooking->event_time_start);
-            $end = $start->copy()->addHours(4);
 
-            GuestBooking::query()
-                ->whereDate('event_date', $securedBooking->event_date)
+            $eventDate = Carbon::parse(
+                $securedBooking->event_date
+            )->format('Y-m-d');
+
+            $securedStart = Carbon::parse(
+                $eventDate . ' ' . $securedBooking->event_time_start
+            );
+
+            $securedEnd = $securedStart->copy()->addHours(4);
+
+            $conflictingBookings = GuestBooking::query()
+                ->whereDate('event_date', $eventDate)
                 ->where('id', '!=', $securedBooking->id)
                 ->where('status', 'confirmed')
                 ->where('payment_status', 'unpaid')
-                ->whereRaw('event_time_start < ?', [$end->format('H:i:s')])
-                ->whereRaw("ADDTIME(event_time_start, '04:00:00') > ?", [$start->format('H:i:s')])
-                ->update([
-                    'status'           => 'pencil',
-                    'is_pencil'        => true,
-                    'has_conflict'     => true,
-                    'conflict_with_id' => $securedBooking->id,
-                    'updated_at'       => now(),
-                ]);
+                ->whereNotNull('event_time_start')
+                ->get();
+
+            foreach ($conflictingBookings as $booking) {
+
+                $bookingStart = Carbon::parse(
+                    $eventDate . ' ' . $booking->event_time_start
+                );
+
+                $bookingEnd = $bookingStart->copy()->addHours(4);
+
+                if (
+                    $bookingStart->lt($securedEnd) &&
+                    $bookingEnd->gt($securedStart)
+                ) {
+                    $booking->update([
+                        'status'           => 'pencil',
+                        'is_pencil'        => true,
+                        'has_conflict'     => true,
+                        'conflict_with_id' => $securedBooking->id,
+                    ]);
+                }
+            }
         }
     }
 
     public function down(): void
     {
-        // The paid reservation is the valid holder of the conflicting slot.
+        // The paid reservation remains the valid holder of the slot.
     }
 };
