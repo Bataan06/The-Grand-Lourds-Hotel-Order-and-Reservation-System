@@ -11,7 +11,7 @@ class Package extends Model
         'amenities', 'price_per_pax_set_a', 'price_per_pax_set_b',
         'price_per_pax_set_c', 'price_per_pax_set_d',
         'menu_set_a', 'menu_set_b', 'menu_set_c', 'menu_set_d',
-        'price_tiers', 'is_active',
+        'price_tiers', 'additional_options', 'is_active',
     ];
 
     public function getAmenitiesAttribute($value)
@@ -29,6 +29,12 @@ class Package extends Model
         $decoded = json_decode($value, true);
         if (is_string($decoded)) $decoded = json_decode($decoded, true);
         return $decoded ?? [];
+    }
+
+    public function getAdditionalOptionsAttribute($value)
+    {
+        if (is_array($value)) return $value;
+        return $value ? (json_decode($value, true) ?? []) : [];
     }
 
     public function getMenuSetAAttribute($value)

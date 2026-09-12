@@ -33,7 +33,7 @@
     .card-v3 { background: linear-gradient(135deg, #9333ea, #c084fc); }
     .card-v4 { background: linear-gradient(135deg, #991b1b, #ef4444); }
     .card-v5 { background: linear-gradient(135deg, #047857, #10b981); }
-    .card-v6 { background: linear-gradient(135deg, #1d4ed8, #60a5fa); cursor: default; }
+    .card-v6 { background: linear-gradient(135deg, #92400e, #f59e0b); }
 
     .section-title { font-weight: 800; color: #2d0057; border-left: 4px solid #7b2ff7; padding-left: 14px; font-size: 1.05rem; }
 
@@ -41,11 +41,14 @@
     .table thead th { background: linear-gradient(135deg, #4a0080, #7b2ff7); color: white; border: none; padding: 13px 15px; font-size: 0.83rem; font-weight: 600; }
     .table tbody td { padding: 12px 15px; vertical-align: middle; font-size: 0.85rem; border-color: #f3e8ff; }
     .table tbody tr:hover { background: #faf5ff; }
+    .table tbody tr.clickable-row { cursor: pointer; }
+    .table tbody tr.clickable-row:hover { background: #f3e8ff; }
 
     .badge-pending   { background: #f3e5f5; color: #7b1fa2; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; display:inline-block; }
     .badge-confirmed { background: #4a0080; color: white;   padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; display:inline-block; }
     .badge-cancelled { background: #fce4ec; color: #c62828; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; display:inline-block; }
     .badge-completed { background: #e8f5e9; color: #2e7d32; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; display:inline-block; }
+    .badge-pencil    { background: #fef3c7; color: #92400e; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; display:inline-block; }
 
     .guest-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg,#7c3aed,#9333ea); display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem; color: white; flex-shrink: 0; }
     .event-date { font-weight: 600; font-size: 0.85rem; color: #1f2937; }
@@ -59,8 +62,7 @@
     $confirmed    = \App\Models\GuestBooking::where('status','confirmed')->count();
     $completed    = \App\Models\GuestBooking::where('status','completed')->count();
     $cancelled    = \App\Models\GuestBooking::where('status','cancelled')->count();
-    $totalGuests  = \App\Models\User::where('role','user')->count();
-    $totalRevenue = \App\Models\GuestBooking::whereIn('status',['confirmed','completed'])->sum('total_amount');
+    $pencilCount  = \App\Models\GuestBooking::where('status','pencil')->count();
 @endphp
 
 {{-- Welcome Banner --}}
@@ -68,7 +70,7 @@
     <div class="row align-items-center position-relative" style="z-index:1;">
         <div class="col-md-8">
             <h3 class="mb-1 fw-bold" style="font-size:1.5rem;">
-                Welcome back, {{ Auth::user()->name }}! 👋
+                Welcome back, {{ Auth::user()->name }}! 
             </h3>
             <p class="mb-0" style="opacity:0.75;font-size:0.9rem;">
                 Here's what's happening at The Grand Lourds Hotel today.
@@ -92,6 +94,13 @@
         </div>
     </div>
     <div class="col-6 col-md-4 col-lg-2 mb-3">
+        <div class="stat-card card-v3 dimmed" id="card-pending" onclick="filterTable('pending')">
+            <div class="stat-label">Pending</div>
+            <div class="stat-num">{{ $pending }}</div>
+            <div class="stat-sub">For review</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2 mb-3">
         <div class="stat-card card-v2 dimmed" id="card-confirmed" onclick="filterTable('confirmed')">
             <div class="stat-label">Confirmed</div>
             <div class="stat-num">{{ $confirmed }}</div>
@@ -106,24 +115,17 @@
         </div>
     </div>
     <div class="col-6 col-md-4 col-lg-2 mb-3">
+        <div class="stat-card card-v6 dimmed" id="card-pencil" onclick="filterTable('pencil')">
+            <div class="stat-label">Pencil</div>
+            <div class="stat-num">{{ $pencilCount }}</div>
+            <div class="stat-sub">Conflicting schedule</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2 mb-3">
         <div class="stat-card card-v4 dimmed" id="card-cancelled" onclick="filterTable('cancelled')">
             <div class="stat-label">Cancelled</div>
             <div class="stat-num">{{ $cancelled }}</div>
             <div class="stat-sub">Cancelled</div>
-        </div>
-    </div>
-    <div class="col-6 col-md-4 col-lg-2 mb-3">
-        <div class="stat-card card-v3 dimmed" id="card-pending" onclick="filterTable('pending')">
-            <div class="stat-label">Pending</div>
-            <div class="stat-num">{{ $pending }}</div>
-            <div class="stat-sub">For review</div>
-        </div>
-    </div>
-    <div class="col-6 col-md-4 col-lg-2 mb-3">
-        <div class="stat-card card-v6">
-            <div class="stat-label">Revenue</div>
-            <div class="stat-num" style="font-size:1.6rem;">&#8369;{{ number_format($totalRevenue/1000, 1) }}K</div>
-            <div class="stat-sub">Confirmed + done</div>
         </div>
     </div>
 </div>
@@ -157,7 +159,10 @@
                     </thead>
                     <tbody id="reservations-body">
                         @forelse(\App\Models\GuestBooking::with(['event','venue'])->latest()->take(20)->get() as $r)
-                        <tr class="res-row" data-status="{{ $r->status }}">
+                        <tr class="res-row clickable-row"
+                            data-status="{{ $r->is_pencil ? 'pencil' : $r->status }}"
+                            onclick="window.location.href='{{ route('admin.event-reservations.show', $r->id) }}'"
+                            title="Open reservation details">
                             <td>
                                 <div class="d-flex align-items-center gap-2">
                                     <div class="guest-avatar">{{ strtoupper(substr($r->guest_name, 0, 1)) }}</div>
@@ -185,7 +190,8 @@
                                 @endif
                             </td>
                             <td>
-                                @if($r->status === 'pending')     <span class="badge-pending">Pending</span>
+                                @if($r->status === 'pencil' || $r->is_pencil) <span class="badge-pencil">Pencil</span>
+                                @elseif($r->status === 'pending')     <span class="badge-pending">Pending</span>
                                 @elseif($r->status === 'confirmed') <span class="badge-confirmed">Confirmed</span>
                                 @elseif($r->status === 'cancelled') <span class="badge-cancelled">Cancelled</span>
                                 @else                               <span class="badge-completed">Completed</span>
@@ -216,7 +222,7 @@
 <script>
 function filterTable(status) {
     // Update cards
-    const cardIds = ['all','confirmed','completed','cancelled','pending'];
+    const cardIds = ['all','pending','confirmed','completed','pencil','cancelled'];
     cardIds.forEach(function(id) {
         var card = document.getElementById('card-' + id);
         if (!card) return;
@@ -247,7 +253,7 @@ function filterTable(status) {
 
     // Update label
     var label = document.getElementById('section-label');
-    var names = { all:'Recent Reservations', confirmed:'Confirmed Reservations', completed:'Completed Reservations', cancelled:'Cancelled Reservations', pending:'Pending Reservations' };
+    var names = { all:'Recent Reservations', pending:'Pending Reservations', confirmed:'Confirmed Reservations', completed:'Completed Reservations', pencil:'Pencil Reservations', cancelled:'Cancelled Reservations' };
     if (label) label.innerHTML = '<i class="fas fa-calendar-check me-2"></i> ' + (names[status] || 'Recent Reservations');
 }
 </script>

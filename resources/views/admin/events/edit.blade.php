@@ -19,6 +19,7 @@
     .price-tabs { display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
     .price-tab  { border:2px solid #e9d5ff; border-radius:8px; padding:6px 14px; cursor:pointer; font-weight:700; color:#4a0080; background:#fff; font-size:0.82rem; transition:all 0.2s; }
     .price-tab.active { background:linear-gradient(135deg,#4a0080,#7b2ff7); color:white; border-color:#4a0080; }
+    .price-tab input { width:82px; border:0; border-radius:5px; padding:2px 5px; color:#4a0080; font:inherit; text-align:center; }
     .price-panel { display:none; }
     .price-panel.active { display:block; }
 
@@ -30,6 +31,10 @@
     .amenity-row { display:flex; gap:8px; margin-bottom:7px; }
     .amenity-row input { flex:1; border:1.5px solid #e9d5ff; border-radius:7px; padding:6px 10px; font-size:0.82rem; outline:none; }
     .amenity-row input:focus { border-color:#7b2ff7; }
+    .option-row { display:flex; gap:8px; margin-bottom:7px; }
+    .option-row input, .option-row select { border:1.5px solid #e9d5ff; border-radius:7px; padding:6px 10px; font-size:0.82rem; }
+    .option-row input:first-child { flex:1; }
+    .option-row input[type=number] { width:120px; }
     .btn-add-item { background:#ede7f6; color:#4a0080; border:none; border-radius:7px; padding:5px 12px; font-size:0.78rem; font-weight:600; cursor:pointer; }
     .btn-add-item:hover { background:#d1c4e9; }
     .btn-rm { background:#fee2e2; color:#dc2626; border:none; border-radius:6px; width:26px; height:26px; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; font-size:0.75rem; }
@@ -96,7 +101,7 @@
 @php
     $tiers = $pkg->price_tiers ?? [];
     $activePrices = array_keys($tiers);
-    $prices = [570, 630, 730];
+    $prices = count($activePrices) ? $activePrices : [570, 630, 730];
     $sets = ['A', 'B', 'C', 'D'];
 @endphp
 
@@ -146,17 +151,37 @@
             <i class="fas fa-plus me-1"></i> Add Inclusion
         </button>
 
+        <div class="section-lbl">Additional Charges</div>
+        <p style="font-size:0.75rem;color:#6b7280;margin:-2px 0 9px;">Optional add-ons and their booking prices.</p>
+        <div id="options-{{ $pkg->id }}">
+            @foreach($pkg->additional_options ?? [] as $option)
+            <div class="option-row">
+                <input type="text" name="additional_options[][label]" value="{{ $option['label'] ?? '' }}" placeholder="Add-on name">
+                <input type="number" name="additional_options[][price]" value="{{ $option['price'] ?? 0 }}" min="0" step="0.01" placeholder="Price">
+                <select name="additional_options[][type]">
+                    <option value="fixed" {{ ($option['type'] ?? '') === 'fixed' ? 'selected' : '' }}>Fixed</option>
+                    <option value="qty" {{ ($option['type'] ?? '') === 'qty' ? 'selected' : '' }}>Per quantity</option>
+                    <option value="pax" {{ ($option['type'] ?? '') === 'pax' ? 'selected' : '' }}>Per pax</option>
+                </select>
+                <button type="button" class="btn-rm" onclick="removeRow(this)"><i class="fas fa-times"></i></button>
+            </div>
+            @endforeach
+        </div>
+        <button type="button" class="btn-add-item mb-3" onclick="addOptionTo('options-{{ $pkg->id }}')"><i class="fas fa-plus me-1"></i> Add Additional Charge</button>
+
         {{-- Food Sets --}}
         <div class="section-lbl">Food Menu Sets</div>
         <div class="price-tabs">
             @foreach($prices as $pi => $price)
-            <button type="button"
+            <div role="button" tabindex="0"
                     class="price-tab {{ $pi === 0 ? 'active' : '' }}"
                     onclick="switchPkgTab('{{ $pkg->id }}', {{ $price }}, this)">
+                <input type="number" name="prices[]" value="{{ $price }}" min="1" step="1" data-original-price="{{ $price }}" onclick="event.stopPropagation()" onchange="renameTierInputs(this)">
                 ₱{{ number_format($price) }}/pax
                 @if(!in_array((string)$price, $activePrices)) <span style="font-size:0.65rem;opacity:0.6;">(empty)</span> @endif
-            </button>
+            </div>
             @endforeach
+            <button type="button" class="btn-add-item" onclick="addPriceTier('{{ $pkg->id }}')"><i class="fas fa-plus"></i> Add price</button>
         </div>
 
         @foreach($prices as $pi => $price)
@@ -224,8 +249,44 @@ function addAmenityTo(containerId) {
         <button type="button" class="btn-rm" onclick="removeRow(this)"><i class="fas fa-times"></i></button>`;
     document.getElementById(containerId).appendChild(row);
 }
+function addOptionTo(containerId) {
+    const row = document.createElement('div');
+    row.className = 'option-row';
+    row.innerHTML = `<input type="text" name="additional_options[][label]" placeholder="Add-on name"><input type="number" name="additional_options[][price]" min="0" step="0.01" placeholder="Price"><select name="additional_options[][type]"><option value="fixed">Fixed</option><option value="qty">Per quantity</option><option value="pax">Per pax</option></select><button type="button" class="btn-rm" onclick="removeRow(this)"><i class="fas fa-times"></i></button>`;
+    document.getElementById(containerId).appendChild(row);
+}
+function renameTierInputs(input) {
+    const oldPrice = input.dataset.originalPrice;
+    const newPrice = input.value;
+    if (!newPrice || newPrice === oldPrice) return;
+    const editor = input.closest('.pkg-editor');
+    editor.querySelectorAll(`[name^="sets[${oldPrice}]"]`).forEach(field => {
+        field.name = field.name.replace(`sets[${oldPrice}]`, `sets[${newPrice}]`);
+    });
+    input.dataset.originalPrice = newPrice;
+}
+function addPriceTier(pkgId) {
+    const newPrice = window.prompt('Enter the new price per pax:');
+    if (!newPrice || Number(newPrice) <= 0) return;
+    const panel = document.querySelector(`[id^="pkgtab-${pkgId}-"]`);
+    if (!panel || document.getElementById(`pkgtab-${pkgId}-${newPrice}`)) return;
+    const oldPrice = panel.id.split('-').pop();
+    const newPanel = document.createElement('div');
+    newPanel.innerHTML = panel.outerHTML.replaceAll(oldPrice, newPrice);
+    const panelCopy = newPanel.firstElementChild;
+    panelCopy.classList.remove('active');
+    panel.parentNode.insertBefore(panelCopy, panel.parentNode.querySelector('.mt-3'));
+    const tab = document.createElement('div');
+    tab.className = 'price-tab';
+    tab.setAttribute('role', 'button');
+    tab.innerHTML = `Price: <input type="number" name="prices[]" value="${newPrice}" min="1" step="1" data-original-price="${newPrice}" onclick="event.stopPropagation()" onchange="renameTierInputs(this)"> / pax`;
+    tab.onclick = () => switchPkgTab(pkgId, newPrice, tab);
+    const tabBar = panel.closest('.pkg-editor').querySelector('.price-tabs');
+    tabBar.insertBefore(tab, tabBar.lastElementChild);
+    switchPkgTab(pkgId, newPrice, tab);
+}
 function removeRow(btn) {
-    btn.closest('.item-row, .amenity-row').remove();
+    btn.closest('.item-row, .amenity-row, .option-row').remove();
 }
 </script>
 @endsection

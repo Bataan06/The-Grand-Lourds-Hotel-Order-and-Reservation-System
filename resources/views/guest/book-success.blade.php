@@ -33,7 +33,7 @@
     <div class="ref-box">
         <div class="ref-label">Reference Number</div>
         <div class="ref-num">{{ $booking->reference_no }}</div>
-        <div style="font-size:11px;color:#9b59b6;margin-top:4px;">Please save this for your records</div>
+        <div style="font-size:11px;color:#9b59b6;margin-top:4px;">Please save this to pay your reservation.</div>
     </div>
 
     <div style="text-align:left;">

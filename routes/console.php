@@ -10,3 +10,4 @@ Artisan::command('inspire', function () {
 
 // Auto-cancel pending bookings with no downpayment after 24 hours
 Schedule::command('bookings:auto-cancel')->hourly();
+Schedule::command('bookings:auto-complete')->everyMinute()->withoutOverlapping();

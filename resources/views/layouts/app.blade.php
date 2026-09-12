@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Grand Lourds Hotel</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -29,7 +30,7 @@
         .sidebar-brand .brand-text .sub  { font-size: 0.7rem; color: rgba(255,255,255,0.45); }
         .sidebar-close-btn { display: none; margin-left: auto; background: rgba(255,255,255,0.1); border: none; color: white; border-radius: 8px; width: 30px; height: 30px; font-size: 14px; cursor: pointer; align-items: center; justify-content: center; }
         @media (max-width: 768px) { .sidebar-close-btn { display: flex; } }
-        .sidebar-nav { flex: 1; padding: 12px 0; overflow-y: hidden; }
+        .sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
         .nav-section-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.35); padding: 14px 18px 6px; }
         .nav-item-link { display: flex; align-items: center; gap: 12px; padding: 10px 18px; margin: 2px 10px; border-radius: 10px; text-decoration: none; color: rgba(255,255,255,0.6); font-size: 0.88rem; font-weight: 500; transition: all 0.2s; }
         .nav-item-link:hover  { background: rgba(255,255,255,0.1); color: white; }
@@ -162,25 +163,11 @@
             <i class="fas fa-tachometer-alt"></i> Dashboard
         </a>
         <div class="nav-section-label">Reservations</div>
-        <a href="{{ route('staff.guest-bookings.index') }}" class="nav-item-link {{ request()->routeIs('staff.guest-bookings.*') ? 'active' : '' }}" onclick="closeSidebar()">
+        <a href="{{ route('staff.guest-bookings.index') }}" class="nav-item-link {{ request()->routeIs('staff.guest-bookings.index') ? 'active' : '' }}" onclick="closeSidebar()">
             <i class="fas fa-calendar-check"></i> Reservations
         </a>
-        <div class="nav-section-label">Messages</div>
-        <a href="{{ route('staff.guest-messages.index') }}" class="nav-item-link {{ request()->routeIs('staff.guest-messages.*') ? 'active' : '' }}" onclick="closeSidebar()">
-            <i class="fas fa-comments"></i> Guest Messages
-        </a>
-
-        @elseif(Auth::user()->role === 'user')
-        <div class="nav-section-label">Main</div>
-        <a href="{{ route('user.dashboard') }}" class="nav-item-link {{ request()->routeIs('user.dashboard') ? 'active' : '' }}" onclick="closeSidebar()">
-            <i class="fas fa-home"></i> Dashboard
-        </a>
-        <div class="nav-section-label">Events</div>
-        <a href="{{ route('user.events.index') }}" class="nav-item-link {{ request()->routeIs('user.events.*') ? 'active' : '' }}" onclick="closeSidebar()">
-            <i class="fas fa-calendar-alt"></i> Browse Events
-        </a>
-        <a href="{{ route('user.reservations.index') }}" class="nav-item-link {{ request()->routeIs('user.reservations.*') ? 'active' : '' }}" onclick="closeSidebar()">
-            <i class="fas fa-calendar-check"></i> My Reservations
+        <a href="{{ route('staff.walk-in.create') }}" class="nav-item-link {{ request()->routeIs('staff.walk-in.*') ? 'active' : '' }}" onclick="closeSidebar()">
+            <i class="fas fa-walking"></i> Walk-in Booking
         </a>
         @endif
     </nav>
@@ -469,220 +456,6 @@
         set('hint-special', /[!@#$%^&*]/.test(val));
     }
 </script>
-
-@auth
-@if(Auth::user()->role === 'user')
-<style>
-    .chat-float-btn {
-        position: fixed; bottom: 28px; right: 28px; z-index: 8888;
-        width: 58px; height: 58px; border-radius: 50%;
-        background: linear-gradient(135deg,#4a0080,#7b2ff7);
-        border: none; color: white; font-size: 1.3rem;
-        box-shadow: 0 6px 24px rgba(74,0,128,0.4);
-        cursor: pointer; display: flex; align-items: center; justify-content: center;
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .chat-float-btn:hover { transform: scale(1.08); box-shadow: 0 8px 30px rgba(74,0,128,0.5); }
-    .chat-notif-badge {
-        position: absolute; top: -3px; right: -3px;
-        background: #ef4444; color: white; font-size: 0.68rem; font-weight: 800;
-        width: 20px; height: 20px; border-radius: 50%;
-        display: none; align-items: center; justify-content: center;
-        border: 2px solid white;
-    }
-    .chat-notif-badge.show { display: flex; }
-    .chat-panel {
-        position: fixed; bottom: 96px; right: 28px; z-index: 8887;
-        width: 340px; border-radius: 18px; overflow: hidden;
-        box-shadow: 0 12px 40px rgba(74,0,128,0.25);
-        display: none; flex-direction: column;
-        background: white; max-height: 480px;
-    }
-    .chat-panel.open { display: flex; }
-    .chat-panel-header {
-        background: linear-gradient(135deg,#4a0080,#7b2ff7);
-        padding: 14px 18px; display: flex; align-items: center; gap: 12px; color: white;
-    }
-    .chat-panel-header .ch-icon { font-size: 1.1rem; }
-    .chat-panel-header .ch-title { font-weight: 700; font-size: 0.9rem; flex: 1; }
-    .chat-panel-header .ch-sub   { font-size: 0.72rem; opacity: 0.75; }
-    .chat-panel-close { background: rgba(255,255,255,0.2); border: none; color: white; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.85rem; flex-shrink: 0; }
-    .chat-panel-close:hover { background: rgba(255,255,255,0.35); }
-    .chat-panel-body {
-        flex: 1; overflow-y: auto; padding: 14px;
-        display: flex; flex-direction: column; gap: 8px;
-        background: #faf5ff; min-height: 280px; max-height: 320px;
-    }
-    .chat-msg-wrap { display: flex; flex-direction: column; }
-    .chat-msg-bubble {
-        max-width: 82%; padding: 9px 13px; border-radius: 14px;
-        font-size: 0.83rem; line-height: 1.5; word-break: break-word;
-    }
-    .chat-msg-bubble.mine   { background: linear-gradient(135deg,#4a0080,#7b2ff7); color: white; align-self: flex-end; border-bottom-right-radius: 3px; }
-    .chat-msg-bubble.theirs { background: white; color: #1f2937; align-self: flex-start; border-bottom-left-radius: 3px; box-shadow: 0 2px 6px rgba(0,0,0,0.07); }
-    .chat-msg-time { font-size: 0.65rem; margin-top: 3px; color: #9ca3af; }
-    .chat-msg-time.mine   { text-align: right; }
-    .chat-msg-sender { font-size: 0.7rem; font-weight: 700; color: #9b59b6; margin-bottom: 2px; }
-    .chat-empty { flex: 1; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; color: #ce93d8; font-size: 0.82rem; padding: 20px 0; }
-    .chat-panel-footer { padding: 12px 14px; border-top: 1px solid #f3e8ff; background: white; }
-    .chat-input-row { display: flex; gap: 8px; align-items: flex-end; }
-    .chat-textarea {
-        flex: 1; border: 1.5px solid #e9d5ff; border-radius: 10px;
-        padding: 8px 12px; font-size: 0.83rem; resize: none;
-        outline: none; font-family: inherit; max-height: 80px;
-    }
-    .chat-textarea:focus { border-color: #7b2ff7; }
-    .chat-send-btn {
-        background: linear-gradient(135deg,#4a0080,#7b2ff7); color: white;
-        border: none; border-radius: 10px; width: 38px; height: 38px;
-        display: flex; align-items: center; justify-content: center;
-        cursor: pointer; flex-shrink: 0; font-size: 0.85rem;
-    }
-    .chat-send-btn:hover { opacity: 0.9; }
-    .chat-toast {
-        position: fixed; bottom: 100px; right: 28px; z-index: 8886;
-        background: linear-gradient(135deg,#4a0080,#7b2ff7); color: white;
-        border-radius: 12px; padding: 12px 16px;
-        box-shadow: 0 6px 20px rgba(74,0,128,0.35);
-        display: none; align-items: center; gap: 10px;
-        font-size: 0.83rem; max-width: 280px; cursor: pointer;
-        animation: slideInRight 0.3s ease;
-    }
-    .chat-toast.show { display: flex; }
-    @keyframes slideInRight {
-        from { transform: translateX(100px); opacity: 0; }
-        to   { transform: translateX(0); opacity: 1; }
-    }
-    @media (max-width: 576px) {
-        .chat-panel { width: calc(100vw - 32px); right: 16px; bottom: 88px; }
-        .chat-float-btn { right: 16px; bottom: 16px; }
-    }
-</style>
-
-<button class="chat-float-btn" id="chatFloatBtn" onclick="toggleChat()" title="Message Staff">
-    <i class="fas fa-comment-dots" id="chatBtnIcon"></i>
-    <span class="chat-notif-badge" id="chatBadge">0</span>
-</button>
-
-<div class="chat-panel" id="chatPanel">
-    <div class="chat-panel-header">
-        <div class="ch-icon"><i class="fas fa-headset"></i></div>
-        <div class="flex-grow-1">
-            <div class="ch-title">Grand Lourds Support</div>
-            <div class="ch-sub">Message our staff</div>
-        </div>
-        <button class="chat-panel-close" onclick="toggleChat()"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="chat-panel-body" id="chatBody">
-        <div class="chat-empty" id="chatEmpty">
-            <i class="fas fa-comment-dots fa-2x"></i>
-            <span>No messages yet.<br>Say hi to our staff!</span>
-        </div>
-    </div>
-    <div class="chat-panel-footer">
-        <div class="chat-input-row">
-            <textarea class="chat-textarea" id="chatInput" rows="1"
-                      placeholder="Type a message..."
-                      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}"></textarea>
-            <button class="chat-send-btn" onclick="sendMessage()">
-                <i class="fas fa-paper-plane"></i>
-            </button>
-        </div>
-    </div>
-</div>
-
-<div class="chat-toast" id="chatToast" onclick="openChat()">
-    <i class="fas fa-comment-dots"></i>
-    <div id="chatToastMsg">New message from staff!</div>
-</div>
-
-<script>
-const CHAT_API = { messages:'/user/messages', send:'/user/messages', unread:'/user/messages/unread' };
-const CSRF = document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}';
-let chatOpen=false, lastMsgId=0, toastTimeout=null;
-function toggleChat() {
-    chatOpen=!chatOpen;
-    document.getElementById('chatPanel').classList.toggle('open',chatOpen);
-    document.getElementById('chatBtnIcon').className=chatOpen?'fas fa-times':'fas fa-comment-dots';
-    if(chatOpen){clearBadge();loadMessages();}
-}
-function openChat(){if(!chatOpen)toggleChat();}
-function clearBadge(){
-    document.getElementById('chatBadge').classList.remove('show');
-    document.getElementById('chatBadge').textContent='0';
-    document.getElementById('chatToast').classList.remove('show');
-}
-function renderMessage(msg){
-    const wrap=document.createElement('div');
-    wrap.className='chat-msg-wrap';
-    wrap.innerHTML=`${!msg.is_mine?`<div class="chat-msg-sender">${msg.sender_name}</div>`:''}
-        <div class="chat-msg-bubble ${msg.is_mine?'mine':'theirs'}">${msg.body}</div>
-        <div class="chat-msg-time ${msg.is_mine?'mine':''}">${msg.time}</div>`;
-    return wrap;
-}
-function loadMessages(){
-    fetch(CHAT_API.messages,{headers:{'X-Requested-With':'XMLHttpRequest'}})
-        .then(r=>r.json()).then(msgs=>{
-            const body=document.getElementById('chatBody');
-            const empty=document.getElementById('chatEmpty');
-            if(msgs.length===0){empty.style.display='flex';return;}
-            empty.style.display='none';
-            body.innerHTML='';
-            msgs.forEach(msg=>body.appendChild(renderMessage(msg)));
-            if(msgs.length)lastMsgId=msgs[msgs.length-1].id;
-            body.scrollTop=body.scrollHeight;
-        });
-}
-function sendMessage(){
-    const input=document.getElementById('chatInput');
-    const body=input.value.trim();
-    if(!body)return;
-    input.value='';
-    fetch(CHAT_API.send,{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-TOKEN':CSRF,'X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({body})})
-        .then(r=>r.json()).then(msg=>{
-            const chatBody=document.getElementById('chatBody');
-            document.getElementById('chatEmpty').style.display='none';
-            chatBody.appendChild(renderMessage(msg));
-            chatBody.scrollTop=chatBody.scrollHeight;
-            lastMsgId=msg.id;
-        });
-}
-function pollMessages(){
-    if(chatOpen){loadMessages();return;}
-    fetch(CHAT_API.unread,{headers:{'X-Requested-With':'XMLHttpRequest'}})
-        .then(r=>r.json()).then(data=>{
-            if(data.count>0){
-                const badge=document.getElementById('chatBadge');
-                badge.textContent=data.count;
-                badge.classList.add('show');
-                const toast=document.getElementById('chatToast');
-                if(!toast.classList.contains('show')){
-                    toast.classList.add('show');
-                    clearTimeout(toastTimeout);
-                    toastTimeout=setTimeout(()=>toast.classList.remove('show'),5000);
-                }
-            }
-        });
-}
-document.addEventListener('DOMContentLoaded',function(){pollMessages();setInterval(pollMessages,8000);});
-</script>
-@endif
-
-@if(Auth::check() && in_array(Auth::user()->role,['staff','admin']))
-<script>
-function pollStaffMessages(){
-    fetch('/staff/messages/unread',{headers:{'X-Requested-With':'XMLHttpRequest'}})
-        .then(r=>r.json()).then(data=>{
-            const badge=document.getElementById('staffMsgBadge');
-            if(!badge)return;
-            if(data.count>0){badge.textContent=data.count;badge.style.display='inline-block';}
-            else{badge.style.display='none';}
-        }).catch(()=>{});
-}
-document.addEventListener('DOMContentLoaded',function(){pollStaffMessages();setInterval(pollStaffMessages,8000);});
-</script>
-@endif
-@endauth
 
 </body>
 </html>

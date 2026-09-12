@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Receipt #{{ str_pad($reservation->id, 5, '0', STR_PAD_LEFT) }} — Grand Lourds Hotel</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
+<title>Receipt #{{ str_pad($reservation->id, 5, '0', STR_PAD_LEFT) }} — Grand Lourds Hotel</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #fff; color: #1f2937; font-size: 13px; padding: 30px; }

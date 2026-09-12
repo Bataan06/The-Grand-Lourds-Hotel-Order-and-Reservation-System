@@ -29,6 +29,7 @@
 
     .badge-pending   { background:#f3e5f5;color:#7b1fa2;padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;display:inline-block;white-space:nowrap; }
     .badge-confirmed { background:#4a0080;color:white;padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;display:inline-block;white-space:nowrap; }
+    .badge-pencil    { background:#fef3c7;color:#92400e;padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;display:inline-block;white-space:nowrap; }
     .badge-cancelled { background:#fce4ec;color:#c62828;padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;display:inline-block;white-space:nowrap; }
     .badge-completed { background:#e8f5e9;color:#2e7d32;padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;display:inline-block;white-space:nowrap; }
     .badge-unpaid    { background:#fee2e2;color:#dc2626;padding:3px 10px;border-radius:20px;font-size:0.72rem;font-weight:700;display:inline-block;white-space:nowrap; }
@@ -52,6 +53,7 @@
     <div class="stat-mini total-b" id="card-all" onclick="filterByCard('all')"><div class="lbl">Total</div><div class="num">{{ $reservations->count() }}</div></div>
     <div class="stat-mini pending-b" id="card-pending" onclick="filterByCard('pending')"><div class="lbl">Pending</div><div class="num">{{ $reservations->where('status','pending')->count() }}</div></div>
     <div class="stat-mini confirmed-b" id="card-confirmed" onclick="filterByCard('confirmed')"><div class="lbl">Confirmed</div><div class="num">{{ $reservations->where('status','confirmed')->count() }}</div></div>
+    <div class="stat-mini" id="card-pencil" onclick="filterByCard('pencil')" style="background:linear-gradient(135deg,#92400e,#f59e0b);"><div class="lbl">Pencil</div><div class="num">{{ $reservations->where('status','pencil')->count() }}</div></div>
     <div class="stat-mini completed-b" id="card-completed" onclick="filterByCard('completed')"><div class="lbl">Completed</div><div class="num">{{ $reservations->where('status','completed')->count() }}</div></div>
     <div class="stat-mini cancelled-b" id="card-cancelled" onclick="filterByCard('cancelled')"><div class="lbl">Cancelled</div><div class="num">{{ $reservations->where('status','cancelled')->count() }}</div></div>
 </div>
@@ -62,6 +64,7 @@
     <select id="filterStatus" onchange="filterTable()">
         <option value="">All Status</option>
         <option value="pending">Pending</option>
+        <option value="pencil">Pencil</option>
         <option value="confirmed">Confirmed</option>
         <option value="completed">Completed</option>
         <option value="cancelled">Cancelled</option>
@@ -99,7 +102,7 @@
         </thead>
         <tbody>
             @forelse($reservations as $r)
-            <tr data-status="{{ $r->status }}"
+            <tr data-status="{{ $r->is_pencil ? 'pencil' : $r->status }}"
                 data-event="{{ strtolower($r->event->name ?? '') }}"
                 data-guest="{{ strtolower($r->guest_name) }}">
 
@@ -146,7 +149,8 @@
                 </td>
 
                 <td>
-                    @if($r->status === 'pending')      <span class="badge-pending">Pending</span>
+                    @if($r->status === 'pencil' || $r->is_pencil) <span class="badge-pencil">Pencil</span>
+                    @elseif($r->status === 'pending')      <span class="badge-pending">Pending</span>
                     @elseif($r->status === 'confirmed') <span class="badge-confirmed">Confirmed</span>
                     @elseif($r->status === 'cancelled') <span class="badge-cancelled">Cancelled</span>
                     @else                               <span class="badge-completed">Completed</span>

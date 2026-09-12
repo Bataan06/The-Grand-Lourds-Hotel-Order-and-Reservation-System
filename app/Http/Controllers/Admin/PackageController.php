@@ -43,6 +43,7 @@ class PackageController extends Controller
             'pax_max'     => $request->pax_max,
             'amenities'   => json_encode(array_values($amenities)),
             'price_tiers' => json_encode($priceTiers),
+            'additional_options' => json_encode($this->buildAdditionalOptions($request)),
             'is_active'   => $request->has('is_active'),
         ]);
 
@@ -79,6 +80,7 @@ class PackageController extends Controller
             'pax_max'     => $request->pax_max,
             'amenities'   => json_encode(array_values($amenities)),
             'price_tiers' => json_encode($priceTiers),
+            'additional_options' => json_encode($this->buildAdditionalOptions($request)),
             'is_active'   => $request->has('is_active'),
         ]);
 
@@ -113,7 +115,9 @@ class PackageController extends Controller
     private function buildPriceTiers(Request $request): array
     {
         $tiers  = [];
-        $prices = $request->input('prices', []);
+        // The compact event editor submits prices[]; the full editor already
+        // identifies each tier through sets[price][...]. Support both forms.
+        $prices = $request->input('prices', array_keys($request->input('sets', [])));
         $soups    = ['Cream of Mushroom', 'Pumpkin Soup', 'Sweet Corn with Crab Meat', 'Nido Soup with Quail Egg'];
         $desserts = ['Fruit Salad', 'Buko Pandan Salad', 'Coffee Jelly', 'Almond Lychee Jelly', 'Butchi (Classic, Ube, Cheese, or Lotus Peanut Filling)'];
         $drinks   = ['Glass of Coke', 'Glass of Iced Tea', 'Glass of Cucumber Juice', 'Glass of Blue Lemonade', 'Glass of Pink Lemonade'];
@@ -139,5 +143,24 @@ class PackageController extends Controller
             }
         }
         return $tiers;
+    }
+
+    private function buildAdditionalOptions(Request $request): array
+    {
+        return collect($request->input('additional_options', []))
+            ->map(function ($option) {
+                $label = trim($option['label'] ?? '');
+                $price = (float) ($option['price'] ?? 0);
+
+                return $label === '' ? null : [
+                    'key' => \Illuminate\Support\Str::snake(\Illuminate\Support\Str::slug($label, ' ')),
+                    'label' => $label,
+                    'price' => $price,
+                    'type' => in_array($option['type'] ?? '', ['fixed', 'qty', 'pax']) ? $option['type'] : 'fixed',
+                ];
+            })
+            ->filter()
+            ->values()
+            ->all();
     }
 }

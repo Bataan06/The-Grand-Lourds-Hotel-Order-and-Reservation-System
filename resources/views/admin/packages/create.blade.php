@@ -1,126 +1,136 @@
-<?php
+@extends('layouts.app')
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\PasswordController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\Admin\EventReservationController as AdminEventReservationController;
-use App\Http\Controllers\Admin\ReportController as AdminReportController;
-use App\Http\Controllers\Admin\ActivityLogController as AdminActivityLogController;
-use App\Http\Controllers\Admin\SpecialOfferController as AdminSpecialOfferController;
-use App\Http\Controllers\Admin\UserController as AdminUserController;
-use App\Http\Controllers\Admin\EventController as AdminEventController;
-use App\Http\Controllers\Admin\PackageController as AdminPackageController;
-use App\Http\Controllers\Staff\EventReservationController as StaffEventReservationController;
-use App\Http\Controllers\Staff\ReportController as StaffReportController;
-use App\Http\Controllers\Staff\MessageController as StaffMessageController;
-use App\Http\Controllers\User\EventReservationController as UserEventReservationController;
-use App\Http\Controllers\User\MessageController as UserMessageController;
+@section('content')
+<style>
+    .page-title { color: #4a0080; font-weight: 800; }
+    .form-card { border:none; border-radius:15px; box-shadow:0 5px 20px rgba(123,47,247,0.08); background:white; padding:32px; }
+    .form-label { font-weight:600; color:#4a0080; font-size:0.85rem; }
+    .form-control, .form-select { border:1.5px solid #e9d5ff; border-radius:8px; font-size:0.85rem; padding:9px 12px; }
+    .form-control:focus, .form-select:focus { border-color:#7b2ff7; box-shadow:0 0 0 3px rgba(123,47,247,0.1); }
+    .btn-save { background:linear-gradient(135deg,#4a0080,#7b2ff7); color:white; border:none; border-radius:8px; padding:10px 28px; font-weight:600; font-size:0.9rem; }
+    .btn-save:hover { opacity:0.9; color:white; }
+    .btn-back { background:#ede7f6; color:#4a0080; border:none; border-radius:8px; padding:10px 20px; font-weight:600; font-size:0.9rem; text-decoration:none; display:inline-block; }
+    .section-label { font-size:0.75rem; letter-spacing:1.5px; text-transform:uppercase; color:#a78bfa; font-weight:700; margin-bottom:12px; margin-top:24px; }
+    .inc-input-row { display:flex; gap:8px; margin-bottom:8px; }
+    .inc-input-row input { flex:1; }
+    .btn-add-inc { background:#f5f0ff; color:#7c3aed; border:1px solid #e9d5ff; border-radius:8px; padding:8px 16px; font-size:0.82rem; font-weight:600; cursor:pointer; white-space:nowrap; }
+    .btn-remove-inc { background:#fee2e2; color:#dc2626; border:none; border-radius:8px; padding:8px 12px; font-size:0.82rem; cursor:pointer; }
+    .tier-row { display:flex; gap:8px; margin-bottom:8px; align-items:center; }
+    .tier-row input { flex:1; }
+</style>
 
-// ==================
-// PUBLIC ROUTES
-// ==================
-Route::get('/', function () {
-    return view('welcome');
-})->name('home');
+{{-- Breadcrumb --}}
+<nav style="font-size:0.83rem;color:#9b59b6;margin-bottom:12px;">
+    <a href="{{ route('admin.events.index') }}" style="color:#7b2ff7;text-decoration:none;">Events</a>
+    <span class="mx-2">/</span>
+    <a href="{{ route('admin.events.packages', $eventId) }}" style="color:#7b2ff7;text-decoration:none;">Packages</a>
+    <span class="mx-2">/</span>
+    <span style="color:#4a0080;font-weight:600;">Add Package</span>
+</nav>
 
-Route::get('/login', function () { return redirect('/'); })->name('login');
-Route::post('/login', [AuthController::class, 'login']);
-Route::get('/register', function () { return redirect('/'); })->name('register');
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="page-title mb-0"><i class="fas fa-plus-circle me-2"></i> Add Package</h2>
+    <a href="{{ route('admin.events.packages', $eventId) }}" class="btn-back">
+        <i class="fas fa-arrow-left me-1"></i> Back
+    </a>
+</div>
 
-// ==================
-// CHANGE PASSWORD + PROFILE (all roles)
-// ==================
-Route::middleware(['auth'])->group(function () {
-    Route::get('/change-password', [PasswordController::class, 'showChangeForm'])->name('password.change');
-    Route::put('/change-password', [PasswordController::class, 'update'])->name('password.update');
-    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
-});
+@if($errors->any())
+<div class="alert alert-danger mb-3" style="border-radius:10px;">
+    <ul class="mb-0">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
+</div>
+@endif
 
-// ==================
-// ADMIN ROUTES
-// ==================
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('admin.dashboard');
-    })->name('dashboard');
+<form action="{{ route('admin.events.packages.store', $eventId) }}" method="POST">
+@csrf
+<div class="form-card">
 
-    Route::get('/event-reservations', [AdminEventReservationController::class, 'index'])->name('event-reservations.index');
-    Route::get('/event-reservations/{id}', [AdminEventReservationController::class, 'show'])->name('event-reservations.show');
-    Route::patch('/event-reservations/{id}', [AdminEventReservationController::class, 'update'])->name('event-reservations.update');
-    Route::delete('/event-reservations/{id}', [AdminEventReservationController::class, 'destroy'])->name('event-reservations.destroy');
-    Route::get('/reports', [AdminReportController::class, 'index'])->name('reports.index');
-    Route::get('/activity-logs', [AdminActivityLogController::class, 'index'])->name('activity-logs.index');
+    {{-- Venue --}}
+    <div class="section-label">Venue & Capacity</div>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label">Venue *</label>
+            <select name="venue_id" class="form-select" required>
+                <option value="">— Select Venue —</option>
+                @foreach($venues as $venue)
+                <option value="{{ $venue->id }}" {{ old('venue_id') == $venue->id ? 'selected' : '' }}>
+                    {{ $venue->name }}
+                </option>
+                @endforeach
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Pax Range *</label>
+            <input type="text" name="pax_range" class="form-control" placeholder="e.g. 100-200"
+                   value="{{ old('pax_range') }}" required>
+        </div>
+    </div>
 
-    // Users
-    Route::resource('users', AdminUserController::class);
+    {{-- Price Tiers --}}
+    <div class="section-label">Price Tiers (per pax)</div>
+    <div id="tiersWrap">
+        <div class="tier-row">
+            <input type="number" name="tier_pax[]" class="form-control" placeholder="Pax (e.g. 100)" min="1">
+            <input type="number" name="tier_price[]" class="form-control" placeholder="Price per pax (e.g. 730)" min="0">
+            <button type="button" class="btn-remove-inc" onclick="removeTier(this)"><i class="fas fa-times"></i></button>
+        </div>
+    </div>
+    <button type="button" class="btn-add-inc mt-1" onclick="addTier()">
+        <i class="fas fa-plus me-1"></i> Add Price Tier
+    </button>
 
-    // Events
-    Route::resource('events', AdminEventController::class);
-    Route::patch('/events/{event}/toggle', [AdminEventController::class, 'toggle'])->name('events.toggle');
+    {{-- Inclusions --}}
+    <div class="section-label">Inclusions / Amenities</div>
+    <div id="inclusionsWrap">
+        <div class="inc-input-row">
+            <input type="text" name="inclusions[]" class="form-control" placeholder="e.g. Free flowing drinks">
+            <button type="button" class="btn-remove-inc" onclick="removeInc(this)"><i class="fas fa-times"></i></button>
+        </div>
+    </div>
+    <button type="button" class="btn-add-inc mt-1" onclick="addInclusion()">
+        <i class="fas fa-plus me-1"></i> Add Inclusion
+    </button>
 
-    // Packages (nested under events)
-    Route::get('/events/{eventId}/packages', [AdminPackageController::class, 'packages'])->name('events.packages');
-    Route::get('/events/{eventId}/packages/create', [AdminPackageController::class, 'create'])->name('events.packages.create');
-    Route::post('/events/{eventId}/packages', [AdminPackageController::class, 'store'])->name('events.packages.store');
-    Route::get('/events/{eventId}/packages/{packageId}/edit', [AdminPackageController::class, 'edit'])->name('events.packages.edit');
-    Route::put('/events/{eventId}/packages/{packageId}', [AdminPackageController::class, 'update'])->name('events.packages.update');
-    Route::delete('/events/{eventId}/packages/{packageId}', [AdminPackageController::class, 'destroy'])->name('events.packages.destroy');
-    Route::patch('/events/{eventId}/packages/{packageId}/toggle', [AdminPackageController::class, 'toggle'])->name('events.packages.toggle');
+    {{-- Status --}}
+    <div class="section-label">Status</div>
+    <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" name="is_active" id="isActive" value="1"
+               {{ old('is_active', '1') ? 'checked' : '' }}>
+        <label class="form-check-label" for="isActive" style="color:#4a0080;font-weight:600;">Active (visible to guests)</label>
+    </div>
 
-    // Special Offers
-    Route::resource('offers', AdminSpecialOfferController::class);
-    Route::patch('/offers/{offer}/toggle', [AdminSpecialOfferController::class, 'toggle'])->name('offers.toggle');
-});
+    <div class="mt-4 d-flex gap-2">
+        <button type="submit" class="btn-save"><i class="fas fa-save me-1"></i> Save Package</button>
+        <a href="{{ route('admin.events.packages', $eventId) }}" class="btn-back">Cancel</a>
+    </div>
+</div>
+</form>
 
-// ==================
-// STAFF ROUTES
-// ==================
-Route::middleware(['auth', 'role:staff'])->prefix('staff')->name('staff.')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('staff.dashboard');
-    })->name('dashboard');
-
-    Route::get('/event-reservations', [StaffEventReservationController::class, 'index'])->name('event-reservations.index');
-    Route::get('/event-reservations/{id}', [StaffEventReservationController::class, 'show'])->name('event-reservations.show');
-    Route::patch('/event-reservations/{id}/confirm', [StaffEventReservationController::class, 'confirm'])->name('event-reservations.confirm');
-    Route::patch('/event-reservations/{id}/complete', [StaffEventReservationController::class, 'complete'])->name('event-reservations.complete');
-    Route::get('/reports', [StaffReportController::class, 'index'])->name('reports.index');
-    Route::get('/event-reservations/{id}/receipt', [StaffEventReservationController::class, 'receipt'])->name('event-reservations.receipt');
-
-    // Messages
-    Route::get('/messages', [StaffMessageController::class, 'index'])->name('messages.index');
-    Route::get('/messages/unread', [StaffMessageController::class, 'unread'])->name('messages.unread');
-    Route::get('/messages/{userId}', [StaffMessageController::class, 'show'])->name('messages.show');
-    Route::post('/messages/{userId}/reply', [StaffMessageController::class, 'reply'])->name('messages.reply');
-});
-
-// ==================
-// USER ROUTES
-// ==================
-Route::middleware(['auth', 'role:user'])->prefix('user')->name('user.')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('user.dashboard');
-    })->name('dashboard');
-
-    // Browse Events
-    Route::get('/events', [UserEventReservationController::class, 'index'])->name('events.index');
-    Route::get('/events/{eventId}/venues', [UserEventReservationController::class, 'selectVenue'])->name('events.venues');
-    Route::get('/events/{eventId}/venues/{venueId}/packages', [UserEventReservationController::class, 'selectPackage'])->name('events.packages');
-    Route::get('/events/book/{packageId}', [UserEventReservationController::class, 'create'])->name('events.create');
-    Route::post('/events/book', [UserEventReservationController::class, 'store'])->name('events.store');
-
-    // My Reservations
-    Route::get('/reservations', [UserEventReservationController::class, 'myReservations'])->name('reservations.index');
-    Route::get('/reservations/{id}', [UserEventReservationController::class, 'show'])->name('reservations.show');
-    Route::get('/reservations/{id}/edit', [UserEventReservationController::class, 'edit'])->name('reservations.edit');
-    Route::put('/reservations/{id}', [UserEventReservationController::class, 'update'])->name('reservations.update');
-    Route::patch('/reservations/{id}/cancel', [UserEventReservationController::class, 'cancel'])->name('reservations.cancel');
-
-    // Messages (AJAX)
-    Route::get('/messages', [UserMessageController::class, 'index'])->name('messages.index');
-    Route::post('/messages', [UserMessageController::class, 'store'])->name('messages.store');
-    Route::get('/messages/unread', [UserMessageController::class, 'unread'])->name('messages.unread');
-});
+<script>
+function addInclusion() {
+    const wrap = document.getElementById('inclusionsWrap');
+    const row = document.createElement('div');
+    row.className = 'inc-input-row';
+    row.innerHTML = `<input type="text" name="inclusions[]" class="form-control" placeholder="e.g. Free flowing drinks">
+                     <button type="button" class="btn-remove-inc" onclick="removeInc(this)"><i class="fas fa-times"></i></button>`;
+    wrap.appendChild(row);
+}
+function removeInc(btn) {
+    const rows = document.querySelectorAll('#inclusionsWrap .inc-input-row');
+    if (rows.length > 1) btn.closest('.inc-input-row').remove();
+}
+function addTier() {
+    const wrap = document.getElementById('tiersWrap');
+    const row = document.createElement('div');
+    row.className = 'tier-row';
+    row.innerHTML = `<input type="number" name="tier_pax[]" class="form-control" placeholder="Pax (e.g. 150)" min="1">
+                     <input type="number" name="tier_price[]" class="form-control" placeholder="Price per pax (e.g. 830)" min="0">
+                     <button type="button" class="btn-remove-inc" onclick="removeTier(this)"><i class="fas fa-times"></i></button>`;
+    wrap.appendChild(row);
+}
+function removeTier(btn) {
+    const rows = document.querySelectorAll('#tiersWrap .tier-row');
+    if (rows.length > 1) btn.closest('.tier-row').remove();
+}
+</script>
+@endsection

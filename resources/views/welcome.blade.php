@@ -30,7 +30,7 @@
         .gl-hero h1 em { font-style: italic; color: #e9d5ff; }
         .hero-loc { color: rgba(255,255,255,0.92); font-size: 13px; margin-bottom: 8px; }
         .hero-loc b { color: #c084fc; }
-        .hero-tagline { color: rgba(255,255,255,0.92); font-size: 14px; max-width: 440px; margin: 0 auto 30px; line-height: 1.65; }
+        .hero-tagline { color: rgba(255,255,255,0.92); font-size: 17px; max-width: 440px; margin: 0 auto 30px; line-height: 1.65; font-family: 'Cormorant Garamond', serif; font-style: italic; }
         .btn-reserve { background: linear-gradient(135deg,#7c3aed,#a855f7); color: #fff; border: none; padding: 14px 34px; border-radius: 6px; font-size: 15px; font-weight: 500; box-shadow: 0 0 28px rgba(124,58,237,.6); transition: all .2s; margin-right: 10px; cursor: pointer; text-decoration: none; display: inline-block; }
         .btn-reserve:hover { transform: translateY(-2px); color: #fff; }
         .btn-outline-hero { background: rgba(255,255,255,0.12); color: #fff; border: 0.5px solid rgba(192,132,252,0.5); padding: 14px 30px; border-radius: 6px; font-size: 14px; text-decoration: none; display: inline-block; transition: all .2s; }
@@ -43,6 +43,16 @@
         .event-card-body { flex: 1; display: flex; flex-direction: column; padding: 16px; }
         .event-card-body .card-bottom { margin-top: auto; padding-top: 12px; }
         .event-thumb { height: 200px; display: flex; align-items: center; justify-content: center; font-size: 52px; flex-shrink: 0; overflow: hidden; position: relative; }
+        .event-thumb { cursor: zoom-in; }
+        .image-lightbox { display:none; position:fixed; inset:0; z-index:2000; background:rgba(13,0,26,.9); padding:28px; align-items:center; justify-content:center; cursor:zoom-out; }
+        .image-lightbox.show { display:flex; }
+        .image-lightbox img { max-width:min(1100px,94vw); max-height:86vh; object-fit:contain; border-radius:12px; box-shadow:0 16px 50px rgba(0,0,0,.55); cursor:default; }
+        .image-lightbox-close { position:absolute; top:16px; right:22px; border:0; background:rgba(255,255,255,.15); color:white; width:38px; height:38px; border-radius:50%; font-size:25px; line-height:1; cursor:pointer; }
+        .image-lightbox-nav { position:absolute; top:50%; transform:translateY(-50%); border:0; background:rgba(255,255,255,.16); color:#fff; width:46px; height:58px; border-radius:10px; font-size:30px; cursor:pointer; }
+        .image-lightbox-nav:hover, .image-lightbox-close:hover { background:rgba(255,255,255,.3); }
+        .image-lightbox-prev { left:18px; }
+        .image-lightbox-next { right:18px; }
+        .image-lightbox-caption { position:absolute; bottom:18px; color:#fff; font-size:13px; text-align:center; }
         .ev-wedding  { background: linear-gradient(135deg,#880e4f,#e91e63); }
         .ev-birthday { background: linear-gradient(135deg,#4a0080,#7b2ff7); }
         .ev-seminar  { background: linear-gradient(135deg,#1a237e,#3f51b5); }
@@ -54,12 +64,17 @@
         .btn-book { color: #fff !important; border: none; padding: 8px 20px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: opacity .2s; text-decoration: none; display: block; text-align: center; }
         .btn-book:hover { opacity: 0.85; }
         .tag { background: #f5f0ff; color: #7c3aed; font-size: 10px; padding: 2px 8px; border-radius: 4px; border: 0.5px solid #e9d5ff; display: inline-block; margin: 2px; }
-        .tag-wedding  { background: #fce4ec; color: #880e4f; border-color: #f8bbd0; }
-        .tag-birthday { background: #ede7f6; color: #4a0080; border-color: #ce93d8; }
-        .tag-seminar  { background: #e8eaf6; color: #283593; border-color: #c5cae9; }
         .offer-card { border-radius: 16px; overflow: hidden; border: none; transition: transform .2s; box-shadow: 0 5px 20px rgba(0,0,0,0.08); height: 100%; }
         .offer-card:hover { transform: translateY(-4px); }
         .offer-badge-pill { position: absolute; top: 12px; left: 12px; background: linear-gradient(135deg,#f59e0b,#d97706); color: #fff; font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 20px; letter-spacing: 1px; text-transform: uppercase; }
+
+        {{-- Track Booking Section --}}
+        .track-section { background: linear-gradient(135deg,#f5f0ff,#faf7ff); border-top: 1px solid #e9d5ff; border-bottom: 1px solid #e9d5ff; padding: 20px 48px; }
+        .track-input { border: 1.5px solid #e9d5ff; border-radius: 8px; padding: 10px 16px; font-size: 13px; font-family: inherit; min-width: 240px; }
+        .track-input:focus { border-color: #7b2ff7; outline: none; }
+        .track-btn { background: linear-gradient(135deg,#4a0080,#7b2ff7); color: white; border: none; border-radius: 8px; padding: 10px 22px; font-size: 13px; font-weight: 700; cursor: pointer; }
+        .track-btn:hover { opacity: 0.9; }
+
         @media (max-width: 768px) {
             .gl-nav { padding: 12px 20px; }
             .gl-nav .nav-links { display: none; }
@@ -70,10 +85,10 @@
             .gl-strip { padding: 12px 20px; gap: 16px; }
             h2.font-serif { font-size: 28px !important; }
             footer { padding: 18px 20px !important; flex-direction: column; text-align: center; }
+            .track-section { padding: 16px 20px; }
         }
         @media (max-width: 576px) { .gl-hero h1 { font-size: 30px; } }
     </style>
-    {{-- ✅ TANGGAL NA: Lumang duplicate slideshow script na nasa head --}}
 </head>
 <body>
 
@@ -110,7 +125,22 @@
     <div class="item"><b>Birthdays / Christening</b></div>
     <div class="item"><b>Seminars & Conferences</b></div>
     <div class="item"><b>Food Service Included</b></div>
-    <div class="item"><b>0942-483-4680</b></div>
+    
+</div>
+
+{{-- PAYMENT UPLOAD SECTION --}}
+<div class="track-section">
+    <div class="d-flex align-items-center justify-content-center gap-3 flex-wrap">
+        <div style="font-size:13px;font-weight:700;color:#4a0080;">
+            <i class="fas fa-receipt me-2"></i>Booking confirmed by staff? Enter your reference number to upload payment:
+        </div>
+        <input type="text" class="track-input" id="trackRefInput"
+               placeholder="e.g. GLH-XXXXXXXX"
+               maxlength="20" style="text-transform:uppercase;">
+        <button class="track-btn" onclick="trackBooking()">
+            <i class="fas fa-arrow-right me-1"></i> Go
+        </button>
+    </div>
 </div>
 
 {{-- EVENTS --}}
@@ -155,7 +185,7 @@
                         $imgs = ['conference1.jpg','conference2.jpg','conference3.jpg'];
                     }
                 @endphp
-                <div class="event-thumb" style="background:{{ $gradient }};position:relative;">
+                <div class="event-thumb" style="background:{{ $gradient }};position:relative;" onclick="openEventImage(this, event)">
                     @if($event->image)
                         <img src="{{ asset('storage/' . $event->image) }}"
                              style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
@@ -179,18 +209,6 @@
                     <p style="font-size:12px;color:#9ca3af;line-height:1.6;margin-bottom:10px;">
                         {{ $event->description ?? 'Experience an unforgettable event with full inclusions, catering, and professional service.' }}
                     </p>
-                    @if($event->packages->count() > 0)
-                    <div class="mb-2">
-                        @foreach($event->packages->take(1) as $pkg)
-                            @php
-                                $inclusions = is_array($pkg->inclusions) ? $pkg->inclusions : json_decode($pkg->inclusions ?? '[]', true);
-                            @endphp
-                            @foreach(array_slice($inclusions ?? [], 0, 6) as $inc)
-                                <span class="tag">{{ $inc }}</span>
-                            @endforeach
-                        @endforeach
-                    </div>
-                    @endif
                     <div class="card-bottom">
                         <a href="/events/{{ $slug }}" class="btn-book" style="background:{{ $btnColor }};">Book Now</a>
                     </div>
@@ -208,7 +226,7 @@
 </section>
 
 {{-- SPECIAL OFFERS --}}
-<section id="offers" style="padding:60px 48px;background:#faf7ff;">
+<section id="offers" style="padding:60px 48px;background:linear-gradient(135deg,#f5f0ff,#faf7ff);border-top:2px solid #e9d5ff;border-bottom:2px solid #e9d5ff;">
     <div class="text-center mb-5">
         <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#a78bfa;">Limited Time</div>
         <h2 class="font-serif" style="font-size:38px;color:#2d0a4e;">Special Offers</h2>
@@ -276,7 +294,6 @@
             <div class="amen-card-sm"><div class="amen-icon-sm"><i class="fas fa-plug" style="color:#9c27b0;"></i></div><h3>Power Backup</h3><p>Generator available</p></div>
             <div class="amen-card-sm"><div class="amen-icon-sm"><i class="fas fa-door-open" style="color:#9c27b0;"></i></div><h3>Private Venue</h3><p>Exclusive event space</p></div>
             <div class="amen-card-sm"><div class="amen-icon-sm"><i class="fas fa-bed" style="color:#9c27b0;"></i></div><h3>Hotel Rooms</h3><p>Available for guests</p></div>
-            {{-- Duplicate --}}
             <div class="amen-card-sm"><div class="amen-icon-sm"><i class="fas fa-snowflake" style="color:#9c27b0;"></i></div><h3>Full A/C</h3><p>Air-conditioned venue</p></div>
             <div class="amen-card-sm"><div class="amen-icon-sm"><i class="fas fa-wifi" style="color:#9c27b0;"></i></div><h3>Free Wi-Fi</h3><p>High-speed internet</p></div>
             <div class="amen-card-sm"><div class="amen-icon-sm"><i class="fas fa-square-parking" style="color:#9c27b0;"></i></div><h3>Free Parking</h3><p>Secured parking area</p></div>
@@ -318,148 +335,59 @@
     </div>
 </footer>
 
-{{-- FLOATING CHAT WIDGET --}}
-<style>
-.float-msg-btn { position: fixed; bottom: 28px; right: 28px; z-index: 999; }
-.float-msg-btn button { width: 58px; height: 58px; border-radius: 50%; background: linear-gradient(135deg,#4a0080,#7b2ff7); border: none; color: white; font-size: 1.3rem; cursor: pointer; box-shadow: 0 4px 20px rgba(74,0,128,0.5); transition: all 0.2s; }
-.float-msg-btn button:hover { transform: scale(1.1); }
-.msg-modal { position: fixed; bottom: 96px; right: 28px; z-index: 999; width: 360px; background: white; border-radius: 16px; box-shadow: 0 8px 40px rgba(0,0,0,0.18); display: none; flex-direction: column; overflow: hidden; max-height: 580px; }
-.msg-modal.show { display: flex; }
-.msg-modal-header { background: linear-gradient(135deg,#2d0057,#4a0080); padding: 14px 18px; color: white; display: flex; justify-content: space-between; align-items: center; }
-.msg-modal-header .title { font-family: 'Cormorant Garamond',serif; font-size: 1rem; }
-.msg-modal-header .sub { font-size: 10px; opacity: 0.7; margin-top: 2px; }
-.msg-modal-header button { background: none; border: none; color: white; font-size: 1rem; cursor: pointer; opacity: 0.7; }
-.msg-tabs { display: flex; border-bottom: 1px solid #f0e6ff; }
-.msg-tab { flex: 1; padding: 10px; font-size: 12px; font-weight: 600; color: #9b59b6; background: none; border: none; cursor: pointer; transition: all 0.2s; }
-.msg-tab.active { color: #4a0080; border-bottom: 2px solid #7b2ff7; }
-.msg-body { padding: 16px; overflow-y: auto; flex: 1; }
-.quick-msgs { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
-.quick-msg-btn { background: #f5f0ff; border: 1.5px solid #e9d5ff; border-radius: 8px; padding: 8px 12px; font-size: 12px; color: #4a0080; cursor: pointer; text-align: left; transition: all 0.2s; }
-.quick-msg-btn:hover { background: #ede7f6; border-color: #a78bfa; }
-.quick-msg-btn.selected { background: #4a0080; color: white; border-color: #4a0080; }
-.msg-form input, .msg-form textarea { width: 100%; border: 1.5px solid #e9d5ff; border-radius: 8px; padding: 9px 12px; font-size: 12px; margin-bottom: 8px; font-family: 'DM Sans',sans-serif; }
-.msg-form input:focus, .msg-form textarea:focus { outline: none; border-color: #7b2ff7; }
-.msg-form textarea { resize: none; height: 80px; }
-.msg-send-btn { background: linear-gradient(135deg,#4a0080,#7b2ff7); color: white; border: none; border-radius: 8px; padding: 10px; font-size: 13px; font-weight: 700; width: 100%; cursor: pointer; }
-.msg-send-btn:hover { opacity: 0.9; }
-.msg-success { text-align: center; padding: 16px 10px; display: none; }
-.msg-success i { font-size: 2.5rem; color: #10b981; margin-bottom: 8px; display: block; }
-.ref-box { background: #f0e6ff; border-radius: 10px; padding: 12px 14px; margin: 10px 0; text-align: center; }
-.ref-box .ref-label { font-size: 10px; color: #9b59b6; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
-.ref-box .ref-num { font-size: 1.2rem; font-weight: 800; color: #4a0080; letter-spacing: 2px; }
-.ref-box .ref-hint { font-size: 10px; color: #9ca3af; margin-top: 4px; }
-.check-reply-wrap input { width: 100%; border: 1.5px solid #e9d5ff; border-radius: 8px; padding: 9px 12px; font-size: 13px; margin-bottom: 8px; font-family: 'DM Sans',sans-serif; text-transform: uppercase; letter-spacing: 1px; }
-.check-reply-wrap input:focus { outline: none; border-color: #7b2ff7; }
-.reply-result { display: none; background: #faf5ff; border-radius: 10px; padding: 14px; border: 1px solid #e9d5ff; margin-top: 10px; }
-.reply-result .rr-label { font-size: 9px; font-weight: 700; text-transform: uppercase; color: #9b59b6; letter-spacing: 1px; margin-bottom: 4px; }
-.reply-result .rr-msg { font-size: 12px; color: #374151; background: white; border-radius: 8px; padding: 10px; margin-bottom: 8px; }
-.reply-result .rr-reply { font-size: 12px; background: #4a0080; color: white; border-radius: 8px; padding: 10px; }
-.reply-pending { text-align: center; padding: 16px; color: #9b59b6; font-size: 12px; display: none; }
-</style>
-
-<div class="float-msg-btn">
-    <button onclick="toggleMsgModal()" title="Send us a message">
-        <i class="fas fa-comment-dots"></i>
-    </button>
-</div>
-
-<div class="msg-modal" id="msgModal">
-    <div class="msg-modal-header">
-        <div>
-            <div class="title">💬 Message Us</div>
-            <div class="sub">The Grand Lourds Hotel · Usually replies within an hour</div>
-        </div>
-        <button onclick="toggleMsgModal()">✕</button>
-    </div>
-
-    {{-- TABS --}}
-    <div class="msg-tabs">
-        <button class="msg-tab active" id="tabSend" onclick="switchTab('send')">Send Message</button>
-        <button class="msg-tab" id="tabCheck" onclick="switchTab('check')">Check Reply</button>
-    </div>
-
-    {{-- SEND TAB --}}
-    <div class="msg-body" id="paneSend">
-        <div id="msgFormWrap">
-            <div style="font-size:12px;font-weight:700;color:#4a0080;margin-bottom:8px;">Quick Messages:</div>
-            <div class="quick-msgs">
-                <button class="quick-msg-btn" onclick="selectQuick(this,'Is the venue still available for booking?')">📅 Is the venue still available?</button>
-                <button class="quick-msg-btn" onclick="selectQuick(this,'What are your current promos and special offers?')">🎁 What are your current promos?</button>
-                <button class="quick-msg-btn" onclick="selectQuick(this,'What is the price per person for your packages?')">💰 What is the price per person?</button>
-                <button class="quick-msg-btn" onclick="selectQuick(this,'Can I visit the venue for an ocular inspection?')">🏨 Can I visit for ocular inspection?</button>
-                <button class="quick-msg-btn" onclick="selectQuick(this,'What are your payment terms?')">💳 What are your payment terms?</button>
-            </div>
-            <div class="msg-form">
-                <input type="text" id="msgName" placeholder="Your Name *" required>
-                <input type="text" id="msgPhone" placeholder="Phone Number *" required>
-                <input type="email" id="msgEmail" placeholder="Email Address (optional)">
-                <textarea id="msgText" placeholder="Type your message here..."></textarea>
-                <button class="msg-send-btn" onclick="sendGuestMessage()">
-                    <i class="fas fa-paper-plane me-1"></i> Send Message
-                </button>
-            </div>
-        </div>
-        <div class="msg-success" id="msgSuccess">
-            <i class="fas fa-check-circle"></i>
-            <div style="font-size:14px;font-weight:700;color:#2d0057;margin-bottom:4px;">Message Sent!</div>
-            <div style="font-size:12px;color:#6b7280;margin-bottom:10px;">Save your reference number to check our reply.</div>
-            <div class="ref-box">
-                <div class="ref-label">Your Reference Number</div>
-                <div class="ref-num" id="refNoDisplay"></div>
-                <div class="ref-hint">Use this to check staff reply in the "Check Reply" tab</div>
-            </div>
-            <button class="msg-send-btn" style="margin-top:10px;" onclick="switchTab('check')">
-                <i class="fas fa-search me-1"></i> Check Reply Now
-            </button>
-        </div>
-    </div>
-
-    {{-- CHECK REPLY TAB --}}
-    <div class="msg-body" id="paneCheck" style="display:none;">
-        <div style="font-size:12px;font-weight:700;color:#4a0080;margin-bottom:8px;">Enter your reference number:</div>
-        <div class="check-reply-wrap">
-            {{-- ✅ AYOS NA: maxlength 12 → 13 (MSG- = 4 chars + 8 chars = 12... actually 12 is correct but set to 13 to be safe) --}}
-            <input type="text" id="refInput" placeholder="e.g. MSG-A1B2C3D4" maxlength="13">
-            <button class="msg-send-btn" onclick="checkReply()">
-                <i class="fas fa-search me-1"></i> Check Reply
-            </button>
-        </div>
-        <div class="reply-result" id="replyResult">
-            <div class="rr-label">Your Message</div>
-            <div class="rr-msg" id="rrMsg"></div>
-            <div id="rrReplyWrap">
-                <div class="rr-label">Staff Reply</div>
-                <div class="rr-reply" id="rrReply"></div>
-                <div style="font-size:10px;color:#9ca3af;margin-top:4px;" id="rrRepliedAt"></div>
-            </div>
-        </div>
-        <div class="reply-pending" id="replyPending">
-            <i class="fas fa-clock fa-2x" style="color:#c084fc;margin-bottom:8px;display:block;"></i>
-            <div style="font-weight:600;color:#4a0080;margin-bottom:4px;">No reply yet</div>
-            <div style="color:#9ca3af;">Our staff will reply to your message soon. Please check back later.</div>
-        </div>
-    </div>
+<div class="image-lightbox" id="imageLightbox" onclick="closeImagePreview(event)" role="dialog" aria-modal="true" aria-label="Image preview">
+    <button type="button" class="image-lightbox-close" aria-label="Close image preview" onclick="closeImagePreview()">&times;</button>
+    <button type="button" class="image-lightbox-nav image-lightbox-prev" aria-label="Previous photo" onclick="changePreviewImage(-1)">&#8249;</button>
+    <img id="imageLightboxImg" src="" alt="">
+    <button type="button" class="image-lightbox-nav image-lightbox-next" aria-label="Next photo" onclick="changePreviewImage(1)">&#8250;</button>
+    <div class="image-lightbox-caption" id="imageLightboxCaption"></div>
 </div>
 
 <script>
-function toggleMsgModal() { document.getElementById('msgModal').classList.toggle('show'); }
-
-// ✅ AYOS NA: Iisang slideshow script lang, nasa dulo ng page (after DOM load)
 var slideIndexes = {};
+var previewImages = [];
+var previewIndex = 0;
 function goEventSlide(cls, n) {
     var slides = document.querySelectorAll('.' + cls);
     if (slideIndexes[cls] === undefined) slideIndexes[cls] = 0;
     if (slides[slideIndexes[cls]]) slides[slideIndexes[cls]].classList.remove('active');
     slideIndexes[cls] = n;
     if (slides[n]) slides[n].classList.add('active');
+}
 
-    // Update dots
-    var dotContainer = document.querySelector('.' + cls.split('-')[0] + '-dots');
-    if (dotContainer) {
-        dotContainer.querySelectorAll('.slide-dot').forEach(function(d, i) {
-            d.classList.toggle('active', i === n);
-        });
-    }
+function openEventImage(thumb, event) {
+    if (event.target.closest('.slide-dot')) return;
+    previewImages = Array.from(thumb.querySelectorAll('img')).map(image => ({ src: image.src, alt: image.alt || 'Event venue photo' }));
+    if (!previewImages.length) return;
+    const activeImage = thumb.querySelector('img.active');
+    previewIndex = activeImage ? Array.from(thumb.querySelectorAll('img')).indexOf(activeImage) : 0;
+    showPreviewImage();
+    document.getElementById('imageLightbox').classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+
+function showPreviewImage() {
+    const image = previewImages[previewIndex];
+    if (!image) return;
+    document.getElementById('imageLightboxImg').src = image.src;
+    document.getElementById('imageLightboxImg').alt = image.alt;
+    document.getElementById('imageLightboxCaption').textContent = `${image.alt} (${previewIndex + 1} of ${previewImages.length})`;
+    const showNavigation = previewImages.length > 1;
+    document.querySelectorAll('.image-lightbox-nav').forEach(button => button.style.display = showNavigation ? '' : 'none');
+}
+
+function changePreviewImage(direction) {
+    if (!previewImages.length) return;
+    previewIndex = (previewIndex + direction + previewImages.length) % previewImages.length;
+    showPreviewImage();
+}
+
+function closeImagePreview(event) {
+    if (event && event.target !== event.currentTarget) return;
+    document.getElementById('imageLightbox').classList.remove('show');
+    document.getElementById('imageLightboxImg').src = '';
+    previewImages = [];
+    document.body.style.overflow = '';
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -475,79 +403,22 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-function switchTab(tab) {
-    document.getElementById('tabSend').classList.toggle('active', tab === 'send');
-    document.getElementById('tabCheck').classList.toggle('active', tab === 'check');
-    document.getElementById('paneSend').style.display  = tab === 'send'  ? 'block' : 'none';
-    document.getElementById('paneCheck').style.display = tab === 'check' ? 'block' : 'none';
-}
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') closeImagePreview();
+    if (document.getElementById('imageLightbox').classList.contains('show') && event.key === 'ArrowLeft') changePreviewImage(-1);
+    if (document.getElementById('imageLightbox').classList.contains('show') && event.key === 'ArrowRight') changePreviewImage(1);
+});
 
-function selectQuick(btn, text) {
-    document.querySelectorAll('.quick-msg-btn').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-    document.getElementById('msgText').value = text;
-}
-
-function sendGuestMessage() {
-    const name  = document.getElementById('msgName').value.trim();
-    const phone = document.getElementById('msgPhone').value.trim();
-    const email = document.getElementById('msgEmail').value.trim();
-    const text  = document.getElementById('msgText').value.trim();
-    if (!name || !phone || !text) { alert('Please fill in your name, phone, and message.'); return; }
-
-    const csrf = document.querySelector('meta[name="csrf-token"]').content;
-    fetch('/guest-message', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf },
-        body: JSON.stringify({ guest_name: name, guest_phone: phone, guest_email: email || null, message: text })
-    })
-    .then(r => { if (!r.ok) return r.text().then(t => { throw new Error(t); }); return r.json(); })
-    .then(data => {
-        if (data.success) {
-            document.getElementById('msgFormWrap').style.display = 'none';
-            document.getElementById('msgSuccess').style.display  = 'block';
-            document.getElementById('refNoDisplay').textContent  = data.reference_no;
-            document.getElementById('refInput').value            = data.reference_no;
-        }
-    })
-    .catch(() => alert('Failed to send. Please try again.'));
-}
-
-function checkReply() {
-    const ref = document.getElementById('refInput').value.trim().toUpperCase();
+function trackBooking() {
+    const ref = document.getElementById('trackRefInput').value.trim().toUpperCase();
     if (!ref) { alert('Please enter your reference number.'); return; }
-
-    const csrf = document.querySelector('meta[name="csrf-token"]').content;
-    fetch('/guest-message/check', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf },
-        body: JSON.stringify({ reference_no: ref })
-    })
-    .then(r => r.json())
-    .then(data => {
-        document.getElementById('replyResult').style.display  = 'none';
-        document.getElementById('replyPending').style.display = 'none';
-
-        if (!data.found) {
-            alert('Reference number not found. Please check and try again.');
-            return;
-        }
-
-        document.getElementById('rrMsg').textContent = data.message;
-
-        if (data.staff_reply) {
-            document.getElementById('rrReplyWrap').style.display = 'block';
-            document.getElementById('rrReply').textContent       = data.staff_reply;
-            document.getElementById('rrRepliedAt').textContent   = 'Replied: ' + data.replied_at;
-            document.getElementById('replyResult').style.display = 'block';
-        } else {
-            document.getElementById('rrReplyWrap').style.display  = 'none';
-            document.getElementById('replyResult').style.display  = 'block';
-            document.getElementById('replyPending').style.display = 'block';
-        }
-    })
-    .catch(() => alert('Failed to check reply. Please try again.'));
+    if (!ref.startsWith('GLH-')) { alert('Invalid reference number. It should start with GLH-'); return; }
+    window.location.href = '/booking/' + ref;
 }
+
+document.getElementById('trackRefInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') trackBooking();
+});
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

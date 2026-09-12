@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class GuestBooking extends Model
 {
@@ -29,7 +30,10 @@ class GuestBooking extends Model
         'amount_paid',
         'has_conflict',
         'is_pencil',
+        'conflict_with_id',
         'expires_at',
+        'payment_proof',
+        'payment_proof_status',
     ];
 
     protected $casts = [
@@ -41,6 +45,17 @@ class GuestBooking extends Model
         'is_pencil'          => 'boolean',
         'expires_at'         => 'datetime',
     ];
+
+    /** Display-only state; the database remains "confirmed" until the event ends. */
+    public function getDisplayStatusAttribute(): string
+    {
+        if ($this->status !== 'confirmed' || !$this->event_date || !$this->event_time_start) {
+            return $this->status;
+        }
+
+        $start = Carbon::parse($this->event_date->format('Y-m-d') . ' ' . $this->event_time_start);
+        return now()->betweenIncluded($start, $start->copy()->addHours(4)) ? 'ongoing' : $this->status;
+    }
 
     public function event()   { return $this->belongsTo(Event::class); }
     public function venue()   { return $this->belongsTo(Venue::class); }

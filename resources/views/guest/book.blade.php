@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
     <title>Book an Event — The Grand Lourds Hotel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -19,6 +20,18 @@
         .back-link:hover { color: white; }
         .page-wrap { max-width: 1140px; margin: 0 auto; padding: 24px 16px; display: grid; grid-template-columns: 1fr 340px; gap: 20px; align-items: start; }
         @media (max-width: 900px) { .page-wrap { grid-template-columns: 1fr; } .sticky-summary { position: relative !important; top: auto !important; } }
+
+        /* Step indicator */
+        .step-bar { display: flex; align-items: center; gap: 0; margin-bottom: 20px; }
+        .step-item { display: flex; align-items: center; gap: 8px; flex: 1; }
+        .step-item:last-child { flex: none; }
+        .step-circle { width: 28px; height: 28px; border-radius: 50%; background: #e9d5ff; color: #4a0080; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .step-circle.active { background: #4a0080; color: white; }
+        .step-circle.done { background: #10b981; color: white; }
+        .step-label { font-size: 11px; font-weight: 600; color: #9ca3af; white-space: nowrap; }
+        .step-label.active { color: #4a0080; }
+        .step-divider { flex: 1; height: 2px; background: #e9d5ff; margin: 0 8px; }
+
         .pkg-section { background: white; border-radius: 10px; margin-bottom: 16px; overflow: hidden; box-shadow: 0 1px 8px rgba(0,0,0,0.07); }
         .pkg-section-header { padding: 16px 20px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; justify-content: space-between; }
         .pkg-section-header .pkg-title { font-family: 'Cormorant Garamond',serif; font-size: 1.15rem; color: #2d0057; font-weight: 700; }
@@ -50,11 +63,13 @@
         .choices-wrap { padding: 12px 20px; border-top: 1px solid #f0f0f0; background: #fffbff; display: none; }
         .details-section { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 1px 8px rgba(0,0,0,0.07); margin-bottom: 16px; }
         .details-section h6 { font-size: 13px; font-weight: 700; color: #2d0057; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid #f0f0f0; }
-        .form-control { border: 1.5px solid #e9d5ff; border-radius: 7px; font-size: 13px; padding: 9px 13px; }
+        .form-control { border: 1.5px solid #e9d5ff; border-radius: 7px; font-size: 13px; padding: 9px 13px; transition: border-color 0.2s; }
         .form-control:focus { border-color: #7b2ff7; box-shadow: none; }
-        .form-control.is-invalid { border-color: #dc2626; }
+        .form-control.is-invalid { border-color: #dc2626; background-color: #fff5f5; }
         .form-control.is-valid { border-color: #10b981; }
         .form-label { font-size: 11px; font-weight: 700; color: #6b21a8; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .field-error { font-size: 11px; color: #dc2626; margin-top: 4px; display: none; align-items: center; gap: 4px; }
+        .field-error.show { display: flex; }
         .addon-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 0.5px solid #f5f0ff; }
         .addon-row:last-child { border: none; }
         .addon-row input[type=checkbox] { accent-color: #7b2ff7; width: 15px; height: 15px; flex-shrink: 0; }
@@ -75,16 +90,16 @@
         .sum-note { font-size: 10px; color: #9ca3af; margin-top: 6px; }
         .btn-submit { background: linear-gradient(135deg,#4a0080,#7b2ff7); color: white; border: none; border-radius: 8px; padding: 13px; font-size: 14px; font-weight: 700; width: 100%; cursor: pointer; margin-top: 12px; }
         .btn-submit:hover { opacity: 0.9; }
-        .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        /* Validation styles */
-        .pax-hint { font-size: 11px; margin-top: 5px; display: none; }
-        .pax-hint.show { display: block; }
+        .pax-hint { font-size: 11px; margin-top: 5px; display: none; align-items: center; gap: 4px; }
+        .pax-hint.show { display: flex; }
         .pax-hint.error { color: #dc2626; }
         .pax-hint.success { color: #10b981; }
         .pax-hint.info { color: #6b21a8; }
         .no-pkg-warning { background: #fef3c7; border: 1px solid #fbbf24; border-radius: 7px; padding: 10px 13px; font-size: 12px; color: #92400e; margin-top: 6px; display: none; }
         .no-pkg-warning.show { display: block; }
+
+        /* Section number badge */
+        .sec-num { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; background: #4a0080; color: white; border-radius: 50%; font-size: 11px; font-weight: 700; margin-right: 8px; flex-shrink: 0; }
     </style>
 </head>
 <body>
@@ -106,27 +121,130 @@
 <input type="hidden" name="addon_total" id="addonTotalInput" value="0">
 
 <div class="page-wrap">
-
-    {{-- LEFT --}}
     <div>
+        {{-- Page Title --}}
         <div style="margin-bottom:20px;">
             <h4 style="font-family:'Cormorant Garamond',serif;color:#2d0057;font-size:1.6rem;margin-bottom:4px;">
-                {{ $selectedEvent->name }} Packages
+                Book — {{ $selectedEvent->name }}
             </h4>
-            <p style="color:#9ca3af;font-size:12px;">Select your preferred package and price tier below.</p>
+            <p style="color:#9ca3af;font-size:12px;">Fill in your details and choose your preferred package below.</p>
+        </div>
+
+        {{-- ══════════════════════════════════════════════════════ --}}
+        {{-- SECTION 1: YOUR DETAILS                               --}}
+        {{-- ══════════════════════════════════════════════════════ --}}
+        <div class="details-section">
+            <h6><span class="sec-num">1</span><i class="fas fa-user me-2" style="color:#7b2ff7;"></i> Your Details</h6>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Full Name *</label>
+                    <input type="text" name="guest_name" id="guestName" class="form-control"
+                           placeholder="Enter your full name" required
+                           oninput="clearErr(this, 'nameError')">
+                    <div class="field-error" id="nameError"><i class="fas fa-exclamation-circle"></i> Please enter your full name.</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Phone Number *</label>
+                    <input type="tel" name="guest_phone" id="guestPhone" class="form-control"
+                           placeholder="09XX-XXX-XXXX" required maxlength="11"
+                           oninput="this.value=this.value.replace(/[^0-9]/g,''); onPhoneInput(this);">
+                    <div class="field-error" id="phoneError"><i class="fas fa-exclamation-circle"></i> Please enter a valid 11-digit PH number starting with 09.</div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Email Address *</label>
+                    <input type="email" name="guest_email" id="guestEmail" class="form-control"
+                           placeholder="your@email.com" required
+                           oninput="clearErr(this, 'emailError')">
+                    <div class="field-error" id="emailError"><i class="fas fa-exclamation-circle"></i> Please enter a valid email address.</div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ══════════════════════════════════════════════════════ --}}
+        {{-- SECTION 2: EVENT DETAILS                              --}}
+        {{-- ══════════════════════════════════════════════════════ --}}
+        <div class="details-section">
+            <h6><span class="sec-num">2</span><i class="fas fa-calendar me-2" style="color:#7b2ff7;"></i> Event Details</h6>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Name of Celebrant / Couple *</label>
+                    <input type="text" name="celebrant_name" id="celebrantName" class="form-control"
+                           placeholder="e.g. Maria Santos" required
+                           oninput="clearErr(this, 'celebrantError')">
+                    <div class="field-error" id="celebrantError"><i class="fas fa-exclamation-circle"></i> Please enter the celebrant or couple's name.</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Number of Guests *</label>
+                    <input type="number" name="pax_count" id="paxCount" class="form-control"
+                           placeholder="e.g. 100" min="1" required
+                           oninput="this.value=this.value.replace(/[^0-9]/g,''); validatePax(); calcTotal();"
+                           onkeypress="return event.charCode >= 48 && event.charCode <= 57">
+                    <div class="pax-hint info" id="paxInfo"><i class="fas fa-info-circle"></i> <span id="paxInfoText"></span></div>
+                    <div class="pax-hint error" id="paxError"><i class="fas fa-exclamation-circle"></i> <span id="paxErrorText"></span></div>
+                    <div class="pax-hint success" id="paxSuccess"><i class="fas fa-check-circle"></i> <span id="paxSuccessText"></span></div>
+                    <div class="no-pkg-warning" id="noPkgWarning">
+                        <i class="fas fa-exclamation-triangle me-1"></i> Please select a package first (below).
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Event Date *</label>
+                    <input type="date" name="event_date" id="eventDate" class="form-control"
+                           min="{{ date('Y-m-d', strtotime('+1 day')) }}" required
+                           onchange="clearErr(this, 'dateError')">
+                    <div class="field-error" id="dateError"><i class="fas fa-exclamation-circle"></i> Please select an event date.</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Event Time *</label>
+                    <select name="event_time_start" id="eventTime" class="form-control" required
+                            onchange="clearErr(this, 'timeError')">
+                        <option value="">-- Select Time --</option>
+                        <option value="08:00">8:00 AM</option>
+                        <option value="08:30">8:30 AM</option>
+                        <option value="09:00">9:00 AM</option>
+                        <option value="09:30">9:30 AM</option>
+                        <option value="10:00">10:00 AM</option>
+                        <option value="10:30">10:30 AM</option>
+                        <option value="11:00">11:00 AM</option>
+                        <option value="11:30">11:30 AM</option>
+                        <option value="12:00">12:00 PM</option>
+                        <option value="12:30">12:30 PM</option>
+                        <option value="13:00">1:00 PM</option>
+                        <option value="13:30">1:30 PM</option>
+                        <option value="14:00">2:00 PM</option>
+                        <option value="14:30">2:30 PM</option>
+                        <option value="15:00">3:00 PM</option>
+                        <option value="15:30">3:30 PM</option>
+                        <option value="16:00">4:00 PM</option>
+                        <option value="16:30">4:30 PM</option>
+                        <option value="17:00">5:00 PM</option>
+                    </select>
+                    <div class="field-error" id="timeError"><i class="fas fa-exclamation-circle"></i> Please select an event time.</div>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Special Requests <span style="color:#9ca3af;text-transform:none;">(optional)</span></label>
+                    <textarea name="special_requests" class="form-control" rows="2" placeholder="Any special requests..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        {{-- ══════════════════════════════════════════════════════ --}}
+        {{-- SECTION 3: PACKAGE & FOOD SET SELECTION               --}}
+        {{-- ══════════════════════════════════════════════════════ --}}
+        <div style="margin-bottom:12px;">
+            <h5 style="font-family:'Cormorant Garamond',serif;color:#2d0057;font-size:1.2rem;margin-bottom:4px;">
+                <span class="sec-num">3</span> Choose Package & Food Set
+            </h5>
+            <p style="color:#9ca3af;font-size:12px;margin-left:30px;">Select your preferred venue, price tier, and food menu.</p>
         </div>
 
         @php
             $pkgsQuery = $selectedEvent->packages()->where('is_active', true)->with('venue')->orderBy('pax_min');
-            if (!empty($selectedPackageId)) {
-                $pkgsQuery->where('id', $selectedPackageId);
-            }
+            if (!empty($selectedPackageId)) { $pkgsQuery->where('id', $selectedPackageId); }
             $pkgsList = $pkgsQuery->get();
         @endphp
 
         @forelse($pkgsList as $pkg)
         @php $tiers = $pkg->price_tiers ?? []; @endphp
-
         <div class="pkg-section">
             <div class="pkg-section-header">
                 <div>
@@ -170,35 +288,39 @@
                 <div class="row g-2">
                     <div class="col-md-4">
                         <label class="form-label">Choice of Soup *</label>
-                        <select name="soup_choice" class="form-control" style="font-size:12px;">
+                        <select name="soup_choice" id="soupChoice" class="form-control" style="font-size:12px;" onchange="clearErr(this, 'soupError')">
                             <option value="">-- Select --</option>
                             <option>Cream of Mushroom</option>
+                            <option>Cream of Crab Meat</option>
+                            <option>Sweet Corn Soup</option>
                             <option>Pumpkin Soup</option>
-                            <option>Sweet Corn with Crab Meat</option>
                             <option>Nido Soup with Quail Egg</option>
                         </select>
+                        <div class="field-error" id="soupError"><i class="fas fa-exclamation-circle"></i> Please select your choice of soup.</div>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Choice of Dessert *</label>
-                        <select name="dessert_choice" class="form-control" style="font-size:12px;">
+                        <select name="dessert_choice" id="dessertChoice" class="form-control" style="font-size:12px;" onchange="clearErr(this, 'dessertError')">
                             <option value="">-- Select --</option>
                             <option>Fruit Salad</option>
                             <option>Buko Pandan Salad</option>
-                            <option>Coffee Jelly</option>
                             <option>Almond Lychee Jelly</option>
-                            <option>Butchi</option>
+                            <option>Coffee Jelly</option>
+                            <option>Butchi (Classic, Ube, Cheese, or Lotus Peanut Filling)</option>
                         </select>
+                        <div class="field-error" id="dessertError"><i class="fas fa-exclamation-circle"></i> Please select your choice of dessert.</div>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Choice of Drink *</label>
-                        <select name="drink_choice" class="form-control" style="font-size:12px;">
+                        <select name="drink_choice" id="drinkChoice" class="form-control" style="font-size:12px;" onchange="clearErr(this, 'drinkError')">
                             <option value="">-- Select --</option>
                             <option>Glass of Coke</option>
                             <option>Glass of Iced Tea</option>
-                            <option>Glass of Cucumber Juice</option>
                             <option>Glass of Blue Lemonade</option>
+                            <option>Glass of Cucumber Juice</option>
                             <option>Glass of Pink Lemonade</option>
                         </select>
+                        <div class="field-error" id="drinkError"><i class="fas fa-exclamation-circle"></i> Please select your choice of drink.</div>
                     </div>
                 </div>
             </div>
@@ -210,25 +332,64 @@
         </div>
         @endforelse
 
-        {{-- Additional Charges --}}
+        {{-- ══════════════════════════════════════════════════════ --}}
+        {{-- SECTION 4: ADDITIONAL CHARGES                         --}}
+        {{-- ══════════════════════════════════════════════════════ --}}
         <div class="details-section">
-            <h6><i class="fas fa-plus-circle me-2" style="color:#7b2ff7;"></i> Additional Charges / Corkage Fee <span style="font-weight:400;color:#9ca3af;">(optional)</span></h6>
+            <h6><span class="sec-num">4</span><i class="fas fa-plus-circle me-2" style="color:#7b2ff7;"></i> Additional Charges / Corkage Fee <span style="font-weight:400;color:#9ca3af;">(optional)</span></h6>
+
+            {{-- Grazing Table --}}
+            <div class="addon-row" style="flex-wrap:wrap;">
+                <input type="checkbox" name="addons[grazing_table][selected]" id="a-grazing_table" value="1"
+                       data-key="grazing_table" onchange="toggleTierAddon('grazing_table', this.checked); calcTotal()">
+                <label for="a-grazing_table" style="font-size:12px;color:#374151;flex:1;cursor:pointer;margin:0;">Grazing Table</label>
+                <span class="addon-price" id="price-grazing_table" style="color:#9ca3af;">Select pax</span>
+                <input type="hidden" name="addons[grazing_table][price]" id="hidden-grazing_table" value="0">
+                <div id="tier-grazing_table" style="display:none;width:100%;padding:6px 0 4px 28px;">
+                    <select onchange="selectTierAddon('grazing_table', this.value)" class="form-control" style="font-size:12px;max-width:240px;">
+                        <option value="">— Select Pax —</option>
+                        <option value="10000">50 pax — ₱10,000</option>
+                        <option value="15000">100 pax — ₱15,000</option>
+                        <option value="20000">150 pax — ₱20,000</option>
+                        <option value="25000">200 pax — ₱25,000</option>
+                        <option value="30000">250 pax — ₱30,000</option>
+                    </select>
+                </div>
+            </div>
+
+            {{-- Shabu-Shabu Station --}}
+            <div class="addon-row" style="flex-wrap:wrap;">
+                <input type="checkbox" name="addons[shabu_station][selected]" id="a-shabu_station" value="1"
+                       data-key="shabu_station" onchange="toggleTierAddon('shabu_station', this.checked); calcTotal()">
+                <label for="a-shabu_station" style="font-size:12px;color:#374151;flex:1;cursor:pointer;margin:0;">Shabu-Shabu Station</label>
+                <span class="addon-price" id="price-shabu_station" style="color:#9ca3af;">Select pax</span>
+                <input type="hidden" name="addons[shabu_station][price]" id="hidden-shabu_station" value="0">
+                <div id="tier-shabu_station" style="display:none;width:100%;padding:6px 0 4px 28px;">
+                    <select onchange="selectTierAddon('shabu_station', this.value)" class="form-control" style="font-size:12px;max-width:240px;">
+                        <option value="">— Select Pax —</option>
+                        <option value="12500">100 pax — ₱12,500</option>
+                        <option value="15000">150 pax — ₱15,000</option>
+                        <option value="17500">200 pax — ₱17,500</option>
+                        <option value="20000">250 pax — ₱20,000</option>
+                    </select>
+                </div>
+            </div>
+
+            {{-- Regular addons --}}
             @php $addons = [
-                ['key'=>'grazing_table',   'label'=>'Grazing Table',                         'price'=>10000, 'type'=>'fixed'],
-                ['key'=>'upgraded_setup',  'label'=>'Upgraded Set Up (Couple Minds Events)',  'price'=>15000, 'type'=>'fixed'],
-                ['key'=>'led_wall',        'label'=>'LED Wall',                              'price'=>15000, 'type'=>'fixed'],
-                ['key'=>'sweet_buffet',    'label'=>'Sweet Buffet / Fruits',                 'price'=>5000,  'type'=>'fixed'],
-                ['key'=>'shabu_station',   'label'=>'Shabu-Shabu Station (per pax)',         'price'=>120,   'type'=>'pax'],
-                ['key'=>'food_cart',       'label'=>'Food Cart',                             'price'=>3500,  'type'=>'fixed'],
-                ['key'=>'full_band',       'label'=>'Full Band',                             'price'=>15000, 'type'=>'fixed'],
-                ['key'=>'outside_stylist', 'label'=>'Outside Stylist',                       'price'=>5000,  'type'=>'fixed'],
-                ['key'=>'photography',     'label'=>'Photography',                           'price'=>8000,  'type'=>'fixed'],
-                ['key'=>'photo_booth',     'label'=>'Photo Booth',                           'price'=>5000,  'type'=>'fixed'],
-                ['key'=>'photo_booth_elec','label'=>'Photo Booth Electricity Charge',        'price'=>1000,  'type'=>'fixed'],
-                ['key'=>'exceeding_hour',  'label'=>'Exceeding Hour',                        'price'=>3000,  'type'=>'fixed'],
-                ['key'=>'lechon_baboy',    'label'=>'Lechon Baboy',                          'price'=>8000,  'type'=>'qty'],
-                ['key'=>'liquor_bottle',   'label'=>'Liquor (per Bottle)',                   'price'=>500,   'type'=>'qty'],
-                ['key'=>'liquor_case',     'label'=>'Liquor (per Case)',                     'price'=>5000,  'type'=>'qty'],
+                ['key'=>'upgraded_setup',  'label'=>'Upgraded Set Up by Couple Minds Events Studio','price'=>15000,'type'=>'fixed'],
+                ['key'=>'photography',     'label'=>'Photography (starts at)',                       'price'=>30000,'type'=>'fixed'],
+                ['key'=>'photo_booth',     'label'=>'Photo Booth (starts at)',                       'price'=>4500, 'type'=>'fixed'],
+                ['key'=>'led_wall',        'label'=>'LED Wall',                                      'price'=>15000,'type'=>'fixed'],
+                ['key'=>'lechon_baboy',    'label'=>'Lechon Baboy (per pc)',                         'price'=>1000, 'type'=>'qty'],
+                ['key'=>'sweet_buffet',    'label'=>'Sweet Buffet / Fruits',                         'price'=>5000, 'type'=>'fixed'],
+                ['key'=>'outside_stylist', 'label'=>'Outside Stylist',                               'price'=>2000, 'type'=>'fixed'],
+                ['key'=>'full_band',       'label'=>'Full Band',                                     'price'=>3000, 'type'=>'fixed'],
+                ['key'=>'liquor_bottle',   'label'=>'Liquor (per Bottle)',                           'price'=>200,  'type'=>'qty'],
+                ['key'=>'liquor_case',     'label'=>'Liquor (per Case)',                             'price'=>500,  'type'=>'qty'],
+                ['key'=>'food_cart',       'label'=>'Food Cart',                                     'price'=>1500, 'type'=>'fixed'],
+                ['key'=>'photo_booth_elec','label'=>'Photo Booth Electricity Charge',                'price'=>1000, 'type'=>'fixed'],
+                ['key'=>'exceeding_hour',  'label'=>'Exceeding Hour',                                'price'=>3000, 'type'=>'fixed'],
             ]; @endphp
             @foreach($addons as $a)
             <div class="addon-row">
@@ -243,106 +404,9 @@
                 <input type="hidden" name="addons[{{ $a['key'] }}][price]" value="{{ $a['price'] }}">
             </div>
             @endforeach
+            <div id="packageAdditionalOptions"></div>
         </div>
 
-        {{-- Guest Details --}}
-        <div class="details-section">
-            <h6><i class="fas fa-user me-2" style="color:#7b2ff7;"></i> Your Details</h6>
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label">Full Name *</label>
-                    <input type="text" name="guest_name" class="form-control" placeholder="Enter your full name" required>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Phone Number *</label>
-                    <input type="tel" name="guest_phone" id="guestPhone" class="form-control" placeholder="09XX-XXX-XXXX" required
-                           oninput="validatePhone(this)">
-                    <div class="pax-hint error" id="phoneError">
-                        <i class="fas fa-exclamation-circle me-1"></i> Please enter a valid 11-digit PH number (e.g. 09171234567)
-                    </div>
-                </div>
-                <div class="col-12">
-                    <label class="form-label">Email Address *</label>
-                    <input type="email" name="guest_email" class="form-control" placeholder="your@email.com" required>
-                </div>
-            </div>
-        </div>
-
-        {{-- Event Details --}}
-        <div class="details-section">
-            <h6><i class="fas fa-calendar me-2" style="color:#7b2ff7;"></i> Event Details</h6>
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="form-label">Name of Celebrant / Couple *</label>
-                    <input type="text" name="celebrant_name" class="form-control" placeholder="e.g. Maria Santos" required>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Number of Guests *</label>
-                    <input type="number" name="pax_count" id="paxCount" class="form-control"
-                           placeholder="e.g. 100" min="1" required oninput="validatePax(); calcTotal()">
-                    {{-- Hint shown after package selected --}}
-                    <div class="pax-hint info" id="paxInfo">
-                        <i class="fas fa-info-circle me-1"></i> <span id="paxInfoText"></span>
-                    </div>
-                    <div class="pax-hint error" id="paxError">
-                        <i class="fas fa-exclamation-circle me-1"></i> <span id="paxErrorText"></span>
-                    </div>
-                    <div class="pax-hint success" id="paxSuccess">
-                        <i class="fas fa-check-circle me-1"></i> <span id="paxSuccessText"></span>
-                    </div>
-                    <div class="no-pkg-warning" id="noPkgWarning">
-                        <i class="fas fa-exclamation-triangle me-1"></i> Please select a package first before entering the number of guests.
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Event Date *</label>
-                    <input type="date" name="event_date" class="form-control" min="{{ date('Y-m-d', strtotime('+1 day')) }}" required>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Event Time *</label>
-                    <select name="event_time_start" class="form-control" required>
-                        <option value="">-- Select Time --</option>
-                        <option value="08:00">8:00 AM</option>
-                        <option value="08:30">8:30 AM</option>
-                        <option value="09:00">9:00 AM</option>
-                        <option value="09:30">9:30 AM</option>
-                        <option value="10:00">10:00 AM</option>
-                        <option value="10:30">10:30 AM</option>
-                        <option value="11:00">11:00 AM</option>
-                        <option value="11:30">11:30 AM</option>
-                        <option value="12:00">12:00 PM</option>
-                        <option value="12:30">12:30 PM</option>
-                        <option value="13:00">1:00 PM</option>
-                        <option value="13:30">1:30 PM</option>
-                        <option value="14:00">2:00 PM</option>
-                        <option value="14:30">2:30 PM</option>
-                        <option value="15:00">3:00 PM</option>
-                        <option value="15:30">3:30 PM</option>
-                        <option value="16:00">4:00 PM</option>
-                        <option value="16:30">4:30 PM</option>
-                        <option value="17:00">5:00 PM</option>
-                    </select>
-                </div>
-                <div class="col-12">
-                    <div style="background:#fef3c7;border:1.5px solid #f59e0b;border-radius:10px;padding:14px 18px;display:flex;align-items:center;gap:14px;">
-                        <input type="checkbox" name="is_pencil" id="isPencil" value="1"
-                               style="width:18px;height:18px;accent-color:#f59e0b;flex-shrink:0;">
-                        <div>
-                            <label for="isPencil" style="font-size:12px;font-weight:700;color:#92400e;cursor:pointer;margin:0;">
-                                ✏️ Pencil Reservation (Tentative)
-                            </label>
-                            <div style="font-size:11px;color:#78350f;margin-top:2px;">
-                                Check this if you are not yet sure about your booking. Our staff will contact you to confirm. Slot is held temporarily.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-12">
-                    <label class="form-label">Special Requests <span style="color:#9ca3af;text-transform:none;">(optional)</span></label>
-                    <textarea name="special_requests" class="form-control" rows="2" placeholder="Any special requests..."></textarea>
-                </div>
-            </div>
-        </div>
     </div>
 
     {{-- RIGHT: Sticky Summary --}}
@@ -378,7 +442,9 @@
 
 <script>
 let selPkgId = null, selPrice = 0, selFoodSet = null;
-let selPaxMin = 0, selPaxMax = 0;
+let selPaxMin = 0, selPaxMax = 0, selEffectiveMax = null;
+
+const allPkgs = @json($pkgsList->map(fn($p) => ['id' => $p->id, 'pax_min' => $p->pax_min, 'pax_max' => $p->pax_max])->sortBy('pax_min')->values());
 
 const pkgData = {};
 @foreach($pkgsList as $pkg)
@@ -387,9 +453,47 @@ pkgData[{{ $pkg->id }}] = {
     paxRange: "{{ $pkg->pax_range }}",
     paxMin: {{ $pkg->pax_min }},
     paxMax: {{ $pkg->pax_max }},
-    tiers: @json($pkg->price_tiers ?? [])
+    tiers: @json($pkg->price_tiers ?? []),
+    additionalOptions: @json($pkg->additional_options ?? [])
 };
 @endforeach
+
+function clearErr(el, errId) {
+    el.classList.remove('is-invalid');
+    document.getElementById(errId).classList.remove('show');
+}
+
+function showErr(el, errId) {
+    el.classList.add('is-invalid');
+    document.getElementById(errId).classList.add('show');
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.focus();
+}
+
+function onPhoneInput(input) {
+    const val = input.value;
+    if (val.length > 0) {
+        const valid = val.length === 11 && val.startsWith('09');
+        if (valid) {
+            input.classList.remove('is-invalid');
+            input.classList.add('is-valid');
+            document.getElementById('phoneError').classList.remove('show');
+        } else {
+            input.classList.remove('is-valid');
+        }
+    } else {
+        input.classList.remove('is-invalid', 'is-valid');
+        document.getElementById('phoneError').classList.remove('show');
+    }
+}
+
+function getEffectiveMax(paxMin, paxMax) {
+    if (paxMin !== paxMax) return paxMax;
+    const sorted = allPkgs.slice().sort((a, b) => a.pax_min - b.pax_min);
+    const idx = sorted.findIndex(p => p.pax_min === paxMin);
+    if (idx !== -1 && idx < sorted.length - 1) return sorted[idx + 1].pax_min - 1;
+    return null;
+}
 
 function selectTier(pkgId, price, venueName, eventName, eventId, paxMin, paxMax) {
     document.querySelectorAll('.price-tier-row').forEach(r => r.classList.remove('selected'));
@@ -400,33 +504,41 @@ function selectTier(pkgId, price, venueName, eventName, eventId, paxMin, paxMax)
 
     selPkgId = pkgId; selPrice = price; selFoodSet = null;
     selPaxMin = paxMin; selPaxMax = paxMax;
+    selEffectiveMax = getEffectiveMax(paxMin, paxMax);
 
     document.getElementById('packageIdInput').value = pkgId;
     document.getElementById('priceInput').value = price;
     document.getElementById('foodSetInput').value = '';
 
-    // Show pax range hint
     const infoEl = document.getElementById('paxInfo');
-    const infoText = document.getElementById('paxInfoText');
-    const rangeText = paxMin === paxMax
-        ? `This package is for exactly ${paxMin} guests.`
-        : `This package accepts ${paxMin} to ${paxMax} guests.`;
-    infoText.textContent = rangeText;
+    let rangeText = paxMin !== paxMax
+        ? `This package accepts ${paxMin} to ${paxMax} guests.`
+        : selEffectiveMax !== null
+            ? `This package accepts ${paxMin} to ${selEffectiveMax} guests.`
+            : `This package requires at least ${paxMin} guests.`;
+    document.getElementById('paxInfoText').textContent = rangeText;
     infoEl.classList.add('show');
     document.getElementById('noPkgWarning').classList.remove('show');
 
     const pkg = pkgData[pkgId];
-    const tierKey = String(price);
-    const sets = (pkg && pkg.tiers && pkg.tiers[tierKey]) ? pkg.tiers[tierKey] : {};
+    renderPackageAdditionalOptions(pkg ? pkg.additionalOptions : []);
+    const sets = (pkg && pkg.tiers && pkg.tiers[String(price)]) ? pkg.tiers[String(price)] : {};
     const grid = document.getElementById('fsgrid-' + pkgId);
     grid.innerHTML = '';
+
     Object.keys(sets).forEach(setKey => {
-        const items = sets[setKey].items || [];
+        const setData = sets[setKey];
+        const items = setData.items || [];
         const div = document.createElement('div');
         div.className = 'food-set-card';
         div.id = 'fscard-' + pkgId + '-' + setKey;
-        div.onclick = () => selectFoodSet(pkgId, setKey);
-        div.innerHTML = `<div class="fs-badge">Set ${setKey}</div><ul>${items.map(i=>`<li>• ${i}</li>`).join('')}<li>• Choice of Soup</li><li>• Choice of Dessert</li><li>• Choice of Drink</li></ul>`;
+
+        // ✅ Use closure to avoid JSON in onclick
+        (function(sk) {
+            div.addEventListener('click', function() { selectFoodSet(pkgId, sk); });
+        })(setKey);
+
+        div.innerHTML = `<div class="fs-badge">Set ${setKey}</div><ul>${items.map(i=>`<li>• ${i}</li>`).join('')}</ul>`;
         grid.appendChild(div);
     });
 
@@ -442,9 +554,44 @@ function selectTier(pkgId, price, venueName, eventName, eventId, paxMin, paxMax)
     document.getElementById('sumPpax').textContent = '₱' + Number(price).toLocaleString() + '/pax';
     document.getElementById('sumFoodSet').textContent = '—';
 
-    // Re-validate pax if already entered
     validatePax();
     calcTotal();
+}
+
+function renderPackageAdditionalOptions(options) {
+    const container = document.getElementById('packageAdditionalOptions');
+    if (!container) return;
+    container.innerHTML = '';
+    (options || []).forEach(option => {
+        const key = option.key || 'additional_' + Math.random().toString(36).slice(2);
+        const price = Number(option.price) || 0;
+        const type = ['fixed', 'qty', 'pax'].includes(option.type) ? option.type : 'fixed';
+        const row = document.createElement('div');
+        row.className = 'addon-row';
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox'; checkbox.name = `addons[${key}][selected]`;
+        checkbox.id = `a-${key}`; checkbox.value = '1';
+        checkbox.dataset.price = price; checkbox.dataset.type = type; checkbox.dataset.key = key;
+        checkbox.addEventListener('change', function () { toggleQty(this); calcTotal(); });
+
+        const label = document.createElement('label');
+        label.htmlFor = checkbox.id; label.textContent = option.label || 'Additional charge';
+        const amount = document.createElement('span');
+        amount.className = 'addon-price';
+        amount.textContent = `₱${price.toLocaleString('en-PH')}${type === 'pax' ? '/pax' : ''}`;
+        const hidden = document.createElement('input');
+        hidden.type = 'hidden'; hidden.name = `addons[${key}][price]`; hidden.value = price;
+        row.append(checkbox, label, amount);
+        if (type === 'qty') {
+            const quantity = document.createElement('input');
+            quantity.type = 'number'; quantity.name = `addons[${key}][qty]`; quantity.id = `qty-${key}`;
+            quantity.value = '1'; quantity.min = '1'; quantity.style.cssText = 'width:55px;display:none;';
+            quantity.addEventListener('change', calcTotal); row.appendChild(quantity);
+        }
+        row.appendChild(hidden);
+        container.appendChild(row);
+    });
 }
 
 function selectFoodSet(pkgId, setKey) {
@@ -459,74 +606,91 @@ function validatePax() {
     const paxInput = document.getElementById('paxCount');
     const pax = parseInt(paxInput.value) || 0;
     const errorEl = document.getElementById('paxError');
-    const errorText = document.getElementById('paxErrorText');
     const successEl = document.getElementById('paxSuccess');
-    const successText = document.getElementById('paxSuccessText');
-    const noPkgWarn = document.getElementById('noPkgWarning');
 
     if (!selPkgId) {
-        if (pax > 0) noPkgWarn.classList.add('show');
-        return;
+        if (pax > 0) document.getElementById('noPkgWarning').classList.add('show');
+        return false;
     }
-
-    noPkgWarn.classList.remove('show');
+    document.getElementById('noPkgWarning').classList.remove('show');
 
     if (pax === 0) {
         paxInput.classList.remove('is-invalid','is-valid');
-        errorEl.classList.remove('show');
-        successEl.classList.remove('show');
-        return;
+        errorEl.classList.remove('show'); successEl.classList.remove('show');
+        return false;
     }
-
-    const hasMax = selPaxMin !== selPaxMax; // true if range like 50-90 or 200-300
-
     if (pax < selPaxMin) {
-        paxInput.classList.add('is-invalid');
-        paxInput.classList.remove('is-valid');
-        errorText.textContent = `Minimum is ${selPaxMin} guests for this package.`;
-        errorEl.classList.add('show');
-        successEl.classList.remove('show');
-        document.getElementById('submitBtn').disabled = true;
-    } else if (hasMax && pax > selPaxMax) {
-        paxInput.classList.add('is-invalid');
-        paxInput.classList.remove('is-valid');
-        errorText.textContent = `Maximum is ${selPaxMax} guests for this package. Please choose a different package.`;
-        errorEl.classList.add('show');
-        successEl.classList.remove('show');
-        document.getElementById('submitBtn').disabled = true;
-    } else {
-        paxInput.classList.remove('is-invalid');
-        paxInput.classList.add('is-valid');
-        errorEl.classList.remove('show');
-        successText.textContent = `${pax} guests — looks good!`;
-        successEl.classList.add('show');
-        document.getElementById('submitBtn').disabled = false;
+        paxInput.classList.add('is-invalid'); paxInput.classList.remove('is-valid');
+        document.getElementById('paxErrorText').textContent = `Minimum is ${selPaxMin} guests for this package.`;
+        errorEl.classList.add('show'); successEl.classList.remove('show');
+        return false;
     }
-}
-
-function validatePhone(input) {
-    const val = input.value.replace(/\D/g,'');
-    const errorEl = document.getElementById('phoneError');
-    if (val.length > 0 && (val.length !== 11 || !val.startsWith('09'))) {
-        input.classList.add('is-invalid');
-        errorEl.classList.add('show');
-    } else {
-        input.classList.remove('is-invalid');
-        errorEl.classList.remove('show');
+    if (selEffectiveMax !== null && pax > selEffectiveMax) {
+        paxInput.classList.add('is-invalid'); paxInput.classList.remove('is-valid');
+        document.getElementById('paxErrorText').textContent = `Maximum is ${selEffectiveMax} guests for this package.`;
+        errorEl.classList.add('show'); successEl.classList.remove('show');
+        return false;
     }
+    paxInput.classList.remove('is-invalid'); paxInput.classList.add('is-valid');
+    errorEl.classList.remove('show');
+    document.getElementById('paxSuccessText').textContent = `${pax} guests — looks good!`;
+    successEl.classList.add('show');
+    return true;
 }
 
 function toggleQty(cb) {
-    const key = cb.dataset.key;
-    const qtyEl = document.getElementById('qty-' + key);
+    const qtyEl = document.getElementById('qty-' + cb.dataset.key);
     if (qtyEl) qtyEl.style.display = cb.checked ? 'inline-block' : 'none';
+}
+
+const tierAddonPrices = { grazing_table: 0, shabu_station: 0 };
+
+function toggleTierAddon(key, checked) {
+    const tierDiv = document.getElementById('tier-' + key);
+    const priceSpan = document.getElementById('price-' + key);
+    if (checked) {
+        tierDiv.style.display = 'block';
+        priceSpan.style.color = '#9ca3af';
+        priceSpan.textContent = 'Select pax';
+    } else {
+        tierDiv.style.display = 'none';
+        tierAddonPrices[key] = 0;
+        document.getElementById('hidden-' + key).value = 0;
+        priceSpan.style.color = '#9ca3af';
+        priceSpan.textContent = 'Select pax';
+        const sel = tierDiv.querySelector('select');
+        if (sel) sel.value = '';
+    }
+    calcTotal();
+}
+
+function selectTierAddon(key, value) {
+    const price = parseInt(value) || 0;
+    tierAddonPrices[key] = price;
+    document.getElementById('hidden-' + key).value = price;
+    const priceSpan = document.getElementById('price-' + key);
+    if (price > 0) {
+        priceSpan.style.color = '#4a0080';
+        priceSpan.textContent = '₱' + price.toLocaleString('en-PH');
+    } else {
+        priceSpan.style.color = '#9ca3af';
+        priceSpan.textContent = 'Select pax';
+    }
+    calcTotal();
 }
 
 function calcTotal() {
     const pax = parseInt(document.getElementById('paxCount').value) || 0;
     const pkgTotal = selPrice * pax;
     let addonTotal = 0;
+
+    const grazingCb = document.getElementById('a-grazing_table');
+    if (grazingCb && grazingCb.checked) addonTotal += tierAddonPrices['grazing_table'];
+    const shabuCb = document.getElementById('a-shabu_station');
+    if (shabuCb && shabuCb.checked) addonTotal += tierAddonPrices['shabu_station'];
+
     document.querySelectorAll('.addon-row input[type=checkbox]:checked').forEach(cb => {
+        if (!cb.dataset.price) return;
         const price = parseInt(cb.dataset.price);
         const type = cb.dataset.type;
         const key = cb.name.match(/addons\[(.+?)\]/)[1];
@@ -536,11 +700,25 @@ function calcTotal() {
             addonTotal += price * (parseInt(qtyEl?.value) || 1);
         } else addonTotal += price;
     });
-    const grand = pkgTotal + addonTotal;
 
+    const grand = pkgTotal + addonTotal;
     const addonsList = document.getElementById('sumAddonsList');
     addonsList.innerHTML = '';
+
+    if (grazingCb && grazingCb.checked && tierAddonPrices['grazing_table'] > 0) {
+        const row = document.createElement('div');
+        row.className = 'sum-row';
+        row.innerHTML = `<span class="s-label" style="font-size:11px;">+ Grazing Table</span><span class="s-val" style="font-size:11px;color:#7b2ff7;">₱${tierAddonPrices['grazing_table'].toLocaleString('en-PH')}</span>`;
+        addonsList.appendChild(row);
+    }
+    if (shabuCb && shabuCb.checked && tierAddonPrices['shabu_station'] > 0) {
+        const row = document.createElement('div');
+        row.className = 'sum-row';
+        row.innerHTML = `<span class="s-label" style="font-size:11px;">+ Shabu-Shabu Station</span><span class="s-val" style="font-size:11px;color:#7b2ff7;">₱${tierAddonPrices['shabu_station'].toLocaleString('en-PH')}</span>`;
+        addonsList.appendChild(row);
+    }
     document.querySelectorAll('.addon-row input[type=checkbox]:checked').forEach(cb => {
+        if (!cb.dataset.price) return;
         const label = cb.closest('.addon-row').querySelector('label').textContent.trim();
         const row = document.createElement('div');
         row.className = 'sum-row';
@@ -555,23 +733,77 @@ function calcTotal() {
     document.getElementById('addonTotalInput').value = addonTotal;
 }
 
-// Form submission validation
 document.getElementById('bookingForm').addEventListener('submit', function(e) {
-    const pax = parseInt(document.getElementById('paxCount').value) || 0;
-    let valid = true;
+    e.preventDefault();
 
-    if (!selPkgId) {
-        alert('Please select a package first.');
-        valid = false;
-    } else if (pax < selPaxMin) {
-        alert(`Minimum number of guests is ${selPaxMin} for this package.`);
-        valid = false;
-    } else if (selPaxMin !== selPaxMax && pax > selPaxMax) {
-        alert(`Maximum number of guests is ${selPaxMax} for this package.`);
-        valid = false;
+    // 1. Name
+    const nameEl = document.getElementById('guestName');
+    if (!nameEl.value.trim()) { showErr(nameEl, 'nameError'); return; }
+    else clearErr(nameEl, 'nameError');
+
+    // 2. Phone
+    const phoneEl = document.getElementById('guestPhone');
+    if (!phoneEl.value || phoneEl.value.length !== 11 || !phoneEl.value.startsWith('09')) {
+        showErr(phoneEl, 'phoneError'); return;
+    } else clearErr(phoneEl, 'phoneError');
+
+    // 3. Email
+    const emailEl = document.getElementById('guestEmail');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailEl.value.trim())) { showErr(emailEl, 'emailError'); return; }
+    else clearErr(emailEl, 'emailError');
+
+    // 4. Celebrant
+    const celebrantEl = document.getElementById('celebrantName');
+    if (!celebrantEl.value.trim()) { showErr(celebrantEl, 'celebrantError'); return; }
+    else clearErr(celebrantEl, 'celebrantError');
+
+    // 5. Pax
+    const paxEl = document.getElementById('paxCount');
+    if (!parseInt(paxEl.value) || !validatePax()) {
+        paxEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        paxEl.focus(); return;
     }
 
-    if (!valid) e.preventDefault();
+    // 6. Date
+    const dateEl = document.getElementById('eventDate');
+    if (!dateEl.value) { showErr(dateEl, 'dateError'); return; }
+    else clearErr(dateEl, 'dateError');
+
+    // 7. Time
+    const timeEl = document.getElementById('eventTime');
+    if (!timeEl.value) { showErr(timeEl, 'timeError'); return; }
+    else clearErr(timeEl, 'timeError');
+
+    // 8. Package
+    if (!selPkgId) {
+        alert('Please select a package and price tier (Section 3).');
+        document.querySelector('.pkg-section').scrollIntoView({ behavior: 'smooth' });
+        return;
+    }
+
+    // 9. Food set
+    if (!selFoodSet) {
+        alert('Please select a food menu set (Section 3).');
+        return;
+    }
+
+    // 10. Soup
+    const soupEl = document.getElementById('soupChoice');
+    if (soupEl && !soupEl.value) { showErr(soupEl, 'soupError'); return; }
+    else if (soupEl) clearErr(soupEl, 'soupError');
+
+    // 11. Dessert
+    const dessertEl = document.getElementById('dessertChoice');
+    if (dessertEl && !dessertEl.value) { showErr(dessertEl, 'dessertError'); return; }
+    else if (dessertEl) clearErr(dessertEl, 'dessertError');
+
+    // 12. Drink
+    const drinkEl = document.getElementById('drinkChoice');
+    if (drinkEl && !drinkEl.value) { showErr(drinkEl, 'drinkError'); return; }
+    else if (drinkEl) clearErr(drinkEl, 'drinkError');
+
+    this.submit();
 });
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

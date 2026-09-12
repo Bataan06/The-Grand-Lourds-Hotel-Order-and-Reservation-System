@@ -34,38 +34,25 @@
     .report-tab { padding: 8px 20px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer; border: 2px solid #e9d5ff; color: #7b2ff7; background: white; text-decoration: none; transition: all 0.2s; }
     .report-tab.active { background: linear-gradient(135deg,#4a0080,#7b2ff7); color: white; border-color: transparent; }
     .report-tab:hover:not(.active) { background: #f5f0ff; color: #4a0080; }
+
+    /* Clickable stat cards */
+    .stat-card-link { text-decoration: none; display: block; height: 100%; transition: transform 0.15s ease, box-shadow 0.15s ease; border-radius: 15px; }
+    .stat-card-link:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.18); }
+    .stat-card-link:hover .stat-card { box-shadow: 0 10px 30px rgba(0,0,0,0.18); }
+    .stat-card-link.active-filter .stat-card { outline: 3px solid white; outline-offset: -3px; }
+    .stat-card-link .stat-card { cursor: pointer; }
 </style>
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="page-title"><i class="fas fa-chart-bar me-2"></i>
-        {{ $type === 'daily' ? 'Daily Report' : 'Monthly Report' }}
-    </h2>
-</div>
-
-{{-- Report Type Tabs --}}
-<div class="report-tabs">
-    <a href="{{ route('admin.reports.index', ['type'=>'daily', 'date'=>$date]) }}"
-       class="report-tab {{ $type === 'daily' ? 'active' : '' }}">
-        <i class="fas fa-calendar-day me-1"></i> Daily
-    </a>
-    <a href="{{ route('admin.reports.index', ['type'=>'monthly', 'month'=>$month]) }}"
-       class="report-tab {{ $type === 'monthly' ? 'active' : '' }}">
-        <i class="fas fa-calendar-alt me-1"></i> Monthly
-    </a>
+    <h2 class="page-title"><i class="fas fa-chart-bar me-2"></i> Monthly Report</h2>
 </div>
 
 {{-- Filter Bar --}}
-<form method="GET" class="d-flex gap-2 align-items-center mb-4">
-    <input type="hidden" name="type" value="{{ $type }}">
-    @if($type === 'daily')
-        <input type="date" name="date" value="{{ $date }}"
-               class="form-control form-control-sm"
-               style="border-color:#7b2ff7;border-radius:8px;font-size:0.82rem;width:160px;">
-    @else
-        <input type="month" name="month" value="{{ $month }}"
-               class="form-control form-control-sm"
-               style="border-color:#7b2ff7;border-radius:8px;font-size:0.82rem;width:160px;">
-    @endif
+<form method="GET" class="d-flex gap-2 align-items-center mb-4" id="filterForm">
+    <input type="hidden" name="status" id="statusInput" value="{{ request('status', '') }}">
+    <input type="month" name="month" value="{{ $month }}"
+           class="form-control form-control-sm"
+           style="border-color:#7b2ff7;border-radius:8px;font-size:0.82rem;width:180px;">
     <button type="submit" class="btn btn-sm text-white"
             style="background:linear-gradient(135deg,#4a0080,#7b2ff7);border-radius:8px;font-weight:600;font-size:0.82rem;padding:6px 14px;">
         <i class="fas fa-search me-1"></i> Filter
@@ -73,13 +60,82 @@
 </form>
 
 {{-- Stats Row --}}
+@php
+    $currentStatus = request('status', '');
+    $baseParams = ['month' => $month];
+
+    // Filter reservations by status if a status is selected
+    $filteredReservations = $currentStatus
+        ? $reservations->where('status', $currentStatus)->values()
+        : $reservations;
+@endphp
+
 <div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-3 mb-4">
-    <div class="col"><div class="stat-card card-total"><p>Total</p><h3>{{ $summary['total'] }}</h3></div></div>
-    <div class="col"><div class="stat-card card-pending"><p>Pending</p><h3>{{ $summary['pending'] }}</h3></div></div>
-    <div class="col"><div class="stat-card card-confirmed"><p>Confirmed</p><h3>{{ $summary['confirmed'] }}</h3></div></div>
-    <div class="col"><div class="stat-card card-completed"><p>Completed</p><h3>{{ $summary['completed'] }}</h3></div></div>
-    <div class="col"><div class="stat-card card-cancelled"><p>Cancelled</p><h3>{{ $summary['cancelled'] }}</h3></div></div>
-    <div class="col"><div class="stat-card" style="background:linear-gradient(135deg,#0d47a1,#1976d2);"><p>Total Pax</p><h3>{{ $summary['total_pax'] }}</h3></div></div>
+    {{-- Total --}}
+    <div class="col">
+        <a href="{{ route('admin.reports.index', $baseParams) }}"
+           class="stat-card-link {{ $currentStatus === '' ? 'active-filter' : '' }}">
+            <div class="stat-card card-total">
+                <p>Total</p>
+                <h3>{{ $summary['total'] }}</h3>
+            </div>
+        </a>
+    </div>
+
+    {{-- Pending --}}
+    <div class="col">
+        <a href="{{ route('admin.reports.index', array_merge($baseParams, ['status' => 'pending'])) }}"
+           class="stat-card-link {{ $currentStatus === 'pending' ? 'active-filter' : '' }}">
+            <div class="stat-card card-pending">
+                <p>Pending</p>
+                <h3>{{ $summary['pending'] }}</h3>
+            </div>
+        </a>
+    </div>
+
+    {{-- Confirmed --}}
+    <div class="col">
+        <a href="{{ route('admin.reports.index', array_merge($baseParams, ['status' => 'confirmed'])) }}"
+           class="stat-card-link {{ $currentStatus === 'confirmed' ? 'active-filter' : '' }}">
+            <div class="stat-card card-confirmed">
+                <p>Confirmed</p>
+                <h3>{{ $summary['confirmed'] }}</h3>
+            </div>
+        </a>
+    </div>
+
+    {{-- Completed --}}
+    <div class="col">
+        <a href="{{ route('admin.reports.index', array_merge($baseParams, ['status' => 'completed'])) }}"
+           class="stat-card-link {{ $currentStatus === 'completed' ? 'active-filter' : '' }}">
+            <div class="stat-card card-completed">
+                <p>Completed</p>
+                <h3>{{ $summary['completed'] }}</h3>
+            </div>
+        </a>
+    </div>
+
+    {{-- Cancelled --}}
+    <div class="col">
+        <a href="{{ route('admin.reports.index', array_merge($baseParams, ['status' => 'cancelled'])) }}"
+           class="stat-card-link {{ $currentStatus === 'cancelled' ? 'active-filter' : '' }}">
+            <div class="stat-card card-cancelled">
+                <p>Cancelled</p>
+                <h3>{{ $summary['cancelled'] }}</h3>
+            </div>
+        </a>
+    </div>
+
+    {{-- Total Pax (no filter — just visual) --}}
+    <div class="col">
+        <div class="stat-card-link" style="cursor:default;">
+            <div class="stat-card" style="background:linear-gradient(135deg,#0d47a1,#1976d2);">
+                <p>Total Pax</p>
+                <h3>{{ $summary['total_pax'] }}</h3>
+                <div class="filter-hint" style="opacity:0;">&nbsp;</div>
+            </div>
+        </div>
+    </div>
 </div>
 
 {{-- Pie Chart + Revenue Row --}}
@@ -105,20 +161,26 @@
                     @php
                         $total = $summary['total'];
                         $statusList = [
-                            ['label'=>'Pending',   'value'=>$summary['pending'],   'color'=>'#9333ea'],
-                            ['label'=>'Confirmed', 'value'=>$summary['confirmed'], 'color'=>'#4a0080'],
-                            ['label'=>'Completed', 'value'=>$summary['completed'], 'color'=>'#10b981'],
-                            ['label'=>'Cancelled', 'value'=>$summary['cancelled'], 'color'=>'#ef4444'],
+                            ['label'=>'Pending',   'value'=>$summary['pending'],   'color'=>'#9333ea', 'key'=>'pending'],
+                            ['label'=>'Confirmed', 'value'=>$summary['confirmed'], 'color'=>'#4a0080', 'key'=>'confirmed'],
+                            ['label'=>'Completed', 'value'=>$summary['completed'], 'color'=>'#10b981', 'key'=>'completed'],
+                            ['label'=>'Cancelled', 'value'=>$summary['cancelled'], 'color'=>'#ef4444', 'key'=>'cancelled'],
                         ];
                     @endphp
                     <div class="row g-2">
                         @foreach($statusList as $s)
                         <div class="col-6">
-                            <div class="status-mini" style="border-left-color:{{ $s['color'] }};">
-                                <div class="s-label">{{ $s['label'] }}</div>
-                                <div class="s-value">{{ $s['value'] }}</div>
-                                <div class="s-pct">{{ $total > 0 ? round(($s['value']/$total)*100) : 0 }}% of total</div>
-                            </div>
+                            <a href="{{ route('admin.reports.index', array_merge($baseParams, ['status' => $s['key']])) }}"
+                               style="text-decoration:none;display:block;transition:transform 0.15s;"
+                               onmouseover="this.style.transform='translateY(-2px)'"
+                               onmouseout="this.style.transform='translateY(0)'">
+                                <div class="status-mini {{ $currentStatus === $s['key'] ? 'fw-bold' : '' }}"
+                                     style="border-left-color:{{ $s['color'] }};{{ $currentStatus === $s['key'] ? 'background:#f0e6ff;' : '' }}">
+                                    <div class="s-label">{{ $s['label'] }}</div>
+                                    <div class="s-value">{{ $s['value'] }}</div>
+                                    <div class="s-pct">{{ $total > 0 ? round(($s['value']/$total)*100) : 0 }}% of total</div>
+                                </div>
+                            </a>
                         </div>
                         @endforeach
                     </div>
@@ -175,12 +237,11 @@
 
 {{-- Reservations Table --}}
 <p class="section-label mb-3">
-    Reservations for
-    @if($type === 'daily')
-        {{ \Carbon\Carbon::parse($date)->format('F d, Y') }}
-    @else
-        {{ \Carbon\Carbon::createFromFormat('Y-m', $month)->format('F Y') }}
+    @if($currentStatus)
+        <span style="background:linear-gradient(135deg,#4a0080,#7b2ff7);color:white;padding:2px 12px;border-radius:20px;font-size:0.8rem;margin-right:8px;text-transform:capitalize;">{{ $currentStatus }}</span>
     @endif
+    Reservations for
+    {{ \Carbon\Carbon::createFromFormat('Y-m', $month)->format('F Y') }}
 </p>
 <div class="table-card card">
     <div class="card-body p-0">
@@ -199,7 +260,7 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse($reservations as $r)
+                @forelse($filteredReservations as $r)
                 <tr>
                     <td>{{ $loop->iteration }}</td>
                     <td><strong>{{ $r->guest_name }}</strong></td>
@@ -228,7 +289,7 @@
                 <tr>
                     <td colspan="9" class="text-center py-4 text-muted">
                         <i class="fas fa-calendar fa-2x mb-2 d-block" style="color:#ce93d8;"></i>
-                        No reservations for this {{ $type === 'daily' ? 'date' : 'month' }}.
+                        No reservations created during this month.
                     </td>
                 </tr>
                 @endforelse
@@ -241,7 +302,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const ctx = document.getElementById('statusPieChart').getContext('2d');
-    new Chart(ctx, {
+    const chart = new Chart(ctx, {
         type: 'doughnut',
         data: {
             labels: ['Pending', 'Confirmed', 'Completed', 'Cancelled'],
@@ -268,9 +329,25 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
                     }
                 }
+            },
+            // Make pie slices clickable to filter
+            onClick: function(event, elements) {
+                if (!elements.length) return;
+                const index = elements[0].index;
+                const statusMap = ['pending', 'confirmed', 'completed', 'cancelled'];
+                const status = statusMap[index];
+                const baseUrl = "{{ route('admin.reports.index') }}";
+                const params = new URLSearchParams({
+                    month: "{{ $month }}",
+                    status: status
+                });
+                window.location.href = baseUrl + '?' + params.toString();
             }
         }
     });
+
+    // Change cursor on hover over pie slices
+    document.getElementById('statusPieChart').style.cursor = 'pointer';
 });
 </script>
 @endsection

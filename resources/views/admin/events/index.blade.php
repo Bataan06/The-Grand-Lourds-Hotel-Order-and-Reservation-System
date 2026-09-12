@@ -37,7 +37,6 @@
                 <th>#</th>
                 <th>Event</th>
                 <th>Description</th>
-                <th>Packages</th>
                 <th>Status</th>
                 <th>Actions</th>
             </tr>
@@ -56,6 +55,7 @@
                 </td>
                 <td style="color:#6b7280;font-size:0.82rem;">{{ Str::limit($event->description, 60) ?? '—' }}</td>
 
+                {{-- STATUS --}}
                 <td>
                     @if($event->is_active)
                         <span class="badge-active">Active</span>
@@ -63,9 +63,10 @@
                         <span class="badge-inactive">Hidden</span>
                     @endif
                 </td>
+
+                {{-- ACTIONS --}}
                 <td>
                     <div class="d-flex gap-1 flex-wrap">
-
                         <a href="{{ route('admin.events.edit', $event) }}" class="btn-edit">
                             <i class="fas fa-pen me-1"></i>Edit
                         </a>
@@ -86,7 +87,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="6" class="text-center py-5 text-muted">
+                <td colspan="5" class="text-center py-5 text-muted">
                     <i class="fas fa-calendar fa-2x mb-2 d-block" style="color:#ce93d8;"></i>
                     No events found.
                 </td>

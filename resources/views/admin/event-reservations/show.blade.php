@@ -21,10 +21,11 @@
         <div class="card">
             <div class="card-header-violet"><i class="fas fa-user me-2"></i> Guest Information</div>
             <div class="card-body p-4">
-                <p><span class="info-label">Name:</span> {{ $reservation->user->name }}</p>
-                <p><span class="info-label">Email:</span> {{ $reservation->user->email }}</p>
-                <p><span class="info-label">Event:</span> {{ $reservation->event->name }}</p>
-                <p><span class="info-label">Venue:</span> {{ $reservation->venue->name }}</p>
+                <p><span class="info-label">Name:</span> {{ $reservation->guest_name }}</p>
+                <p><span class="info-label">Email:</span> {{ $reservation->guest_email ?: '—' }}</p>
+                <p><span class="info-label">Phone:</span> {{ $reservation->guest_phone ?: '—' }}</p>
+                <p><span class="info-label">Event:</span> {{ $reservation->event?->name ?? '—' }}</p>
+                <p><span class="info-label">Venue:</span> {{ $reservation->venue?->name ?? '—' }}</p>
                 <p><span class="info-label">Celebrant/Couple:</span> {{ $reservation->celebrant_name ?? '—' }}</p>
                 <p><span class="info-label">Event Date:</span> {{ $reservation->event_date->format('F d, Y') }}</p>
                 <p><span class="info-label">Event Time:</span>
@@ -42,9 +43,10 @@
                 <p><span class="info-label">Status:</span>
                     <span class="ms-2 badge" style="background:
                         {{ $reservation->status === 'confirmed' ? '#4a0080' :
+                          ($reservation->status === 'pencil' ? '#f59e0b' :
                           ($reservation->status === 'cancelled' ? '#d500f9' :
-                          ($reservation->status === 'completed' ? '#9c27b0' : '#ede7f6')) }};
-                        color: {{ $reservation->status === 'pending' ? '#6a0dad' : 'white' }};
+                          ($reservation->status === 'completed' ? '#9c27b0' : '#ede7f6'))) }};
+                        color: {{ in_array($reservation->status, ['pending', 'pencil']) ? '#6a0dad' : 'white' }};
                         padding:6px 14px; border-radius:20px;">
                         {{ ucfirst($reservation->status) }}
                     </span>
@@ -65,6 +67,7 @@
                         <label class="form-label fw-bold" style="color:#6a0dad;">Change Status</label>
                         <select name="status" class="form-select" style="border:1.5px solid #e9d5ff;border-radius:8px;">
                             <option value="pending"   {{ $reservation->status === 'pending'   ? 'selected' : '' }}>Pending</option>
+                            <option value="pencil"    {{ $reservation->status === 'pencil'    ? 'selected' : '' }}>Pencil</option>
                             <option value="confirmed" {{ $reservation->status === 'confirmed' ? 'selected' : '' }}>Confirmed</option>
                             <option value="completed" {{ $reservation->status === 'completed' ? 'selected' : '' }}>Completed</option>
                             <option value="cancelled" {{ $reservation->status === 'cancelled' ? 'selected' : '' }}>Cancelled</option>

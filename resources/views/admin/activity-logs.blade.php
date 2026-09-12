@@ -2,150 +2,32 @@
 
 @section('content')
 <style>
-    .page-title { color: #4a0080; font-weight: 800; }
-    .card { border: none; border-radius: 15px; box-shadow: 0 5px 20px rgba(123,47,247,0.1); }
-    .table thead th { background: linear-gradient(135deg, #4a0080, #7b2ff7); color: white; border: none; padding: 15px; }
-    .table tbody tr:hover { background: #f3e5f5; }
-    .table tbody td { padding: 12px 15px; vertical-align: middle; }
-
-    .action-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; display: inline-block; }
-    .action-login                      { background: #e8f5e9; color: #2e7d32; }
-    .action-logout                     { background: #fce4ec; color: #c62828; }
-    .action-register                   { background: #e3f2fd; color: #1565c0; }
-    .action-reservation_created        { background: #e3f2fd; color: #1565c0; }
-    .action-reservation_cancelled      { background: #fff3e0; color: #e65100; }
-    .action-reservation_confirmed      { background: #e8f5e9; color: #2e7d32; }
-    .action-reservation_completed      { background: #ede7f6; color: #4a148c; }
-    .action-reservation_deleted        { background: #fce4ec; color: #c62828; }
-    .action-reservation_status_updated { background: #fff8e1; color: #f57f17; }
-    .action-receipt_printed            { background: #e0f2f1; color: #00695c; }
-    .action-profile_updated            { background: #f3e5f5; color: #6a1b9a; }
-
-    .role-badge { padding: 3px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: 600; }
-    .role-admin { background: #4a0080; color: white; }
-    .role-staff { background: #1565c0; color: white; }
-    .role-user  { background: #ede7f6; color: #4a0080; }
-
-    .filter-bar { background: white; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(123,47,247,0.08); }
+.activity-page{max-width:1440px;margin:auto}.activity-title{color:#2d0a4e;font-weight:800}.activity-subtitle{color:#8b7a9d;font-size:.88rem}.filter-card,.logs-card{background:#fff;border:1px solid #eadcff;border-radius:16px;box-shadow:0 8px 24px rgba(74,0,128,.07)}.filter-card{padding:18px 20px;margin-bottom:20px}.filter-label{display:block;margin-bottom:6px;color:#6b21a8;font-size:.74rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}.filter-card .form-control,.filter-card .form-select{min-height:40px;border:1px solid #dec7ff;border-radius:9px;font-size:.88rem}.filter-card .form-control:focus,.filter-card .form-select:focus{border-color:#7b2ff7;box-shadow:0 0 0 3px rgba(123,47,247,.12)}.logs-card{overflow:hidden}.logs-head{padding:16px 20px;border-bottom:1px solid #f0e7fa;background:linear-gradient(90deg,#fff,#fbf8ff)}.logs-table{min-width:850px;margin:0}.logs-table thead th{padding:14px 16px;border:0;background:linear-gradient(135deg,#4a0080,#7b2ff7);color:#fff;font-size:.76rem;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}.logs-table tbody td{padding:15px 16px;vertical-align:middle;border-color:#f0e7fa}.logs-table tbody tr:hover{background:#fbf8ff}.log-user{display:flex;align-items:center;gap:10px;min-width:150px}.log-avatar{width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;background:linear-gradient(135deg,#4a0080,#9d4edd);color:#fff;font-size:.78rem;font-weight:800}.role-badge,.action-badge{display:inline-block;border-radius:20px;font-size:.74rem;font-weight:700;white-space:nowrap}.role-badge{padding:4px 10px}.role-admin{background:#4a0080;color:#fff}.role-staff{background:#1565c0;color:#fff}.role-user{background:#ede7f6;color:#4a0080}.action-badge{padding:5px 11px}.action-login,.action-reservation_confirmed{background:#e8f5e9;color:#2e7d32}.action-logout,.action-reservation_deleted{background:#fce4ec;color:#c62828}.action-register,.action-reservation_created{background:#e3f2fd;color:#1565c0}.action-reservation_cancelled{background:#fff3e0;color:#e65100}.action-reservation_completed,.action-profile_updated{background:#ede7f6;color:#4a148c}.action-reservation_status_updated{background:#fff8e1;color:#a16207}.action-receipt_printed{background:#e0f2f1;color:#00695c}.log-description{max-width:440px;color:#4b5563;font-size:.84rem;line-height:1.45}.log-date{white-space:nowrap;color:#374151;font-size:.82rem;font-weight:600}.log-time{margin-top:2px;color:#8b5cf6;font-size:.74rem}.pagination-wrap{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-top:18px;color:#7c3aed;font-size:.84rem}.pagination-links{display:flex;align-items:center;gap:5px;flex-wrap:wrap}.page-link-custom{min-width:34px;height:34px;padding:0 10px;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;background:#f5f0ff;color:#4a0080;text-decoration:none;font-weight:700}.page-link-custom:hover{background:#eadcff;color:#4a0080}.page-link-custom.current{background:linear-gradient(135deg,#4a0080,#7b2ff7);color:#fff}.page-link-custom.disabled{color:#c4b5d1;pointer-events:none}@media(max-width:767px){.activity-heading,.pagination-wrap{align-items:flex-start!important;flex-direction:column;gap:8px}}
 </style>
-
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="page-title"><i class="fas fa-clipboard-list me-2"></i> Activity Logs</h2>
-    <span style="font-size:0.85rem;color:#9b59b6;">
-        Total: <strong>{{ $logs->total() }}</strong> records
-    </span>
-</div>
-
-{{-- Filter Bar --}}
-<div class="filter-bar">
-    <form method="GET" action="{{ route('admin.activity-logs.index') }}" class="row g-2 align-items-end">
-        <div class="col-md-4">
-            <label style="font-size:0.75rem;font-weight:600;color:#9b59b6;">Search User</label>
-            <input type="text" name="search" value="{{ request('search') }}"
-                   class="form-control form-control-sm" placeholder="Type a name...">
-        </div>
-        <div class="col-md-4">
-            <label style="font-size:0.75rem;font-weight:600;color:#9b59b6;">Filter by Action</label>
-            <select name="action" class="form-select form-select-sm">
-                <option value="">All Actions</option>
-                <option value="login"                      {{ request('action')==='login'                      ?'selected':'' }}>Login</option>
-                <option value="logout"                     {{ request('action')==='logout'                     ?'selected':'' }}>Logout</option>
-                <option value="register"                   {{ request('action')==='register'                   ?'selected':'' }}>Register</option>
-                <option value="reservation_created"        {{ request('action')==='reservation_created'        ?'selected':'' }}>Reservation Created</option>
-                <option value="reservation_cancelled"      {{ request('action')==='reservation_cancelled'      ?'selected':'' }}>Reservation Cancelled</option>
-                <option value="reservation_confirmed"      {{ request('action')==='reservation_confirmed'      ?'selected':'' }}>Reservation Confirmed</option>
-                <option value="reservation_completed"      {{ request('action')==='reservation_completed'      ?'selected':'' }}>Reservation Completed</option>
-                <option value="reservation_deleted"        {{ request('action')==='reservation_deleted'        ?'selected':'' }}>Reservation Deleted</option>
-                <option value="reservation_status_updated" {{ request('action')==='reservation_status_updated' ?'selected':'' }}>Status Updated</option>
-                <option value="receipt_printed"            {{ request('action')==='receipt_printed'            ?'selected':'' }}>Receipt Printed</option>
-                <option value="profile_updated"            {{ request('action')==='profile_updated'            ?'selected':'' }}>Profile Updated</option>
-            </select>
-        </div>
-        <div class="col-md-4 d-flex gap-2">
-            <button type="submit" class="btn btn-sm text-white w-100" style="background:linear-gradient(135deg,#4a0080,#7b2ff7);border-radius:8px;">
-                <i class="fas fa-search me-1"></i> Filter
-            </button>
-            <a href="{{ route('admin.activity-logs.index') }}" class="btn btn-sm w-100" style="border:1px solid #ce93d8;color:#7b2ff7;border-radius:8px;">
-                <i class="fas fa-times me-1"></i> Clear
-            </a>
-        </div>
-    </form>
-</div>
-
-{{-- Table --}}
-<div class="card">
-    <div class="card-body p-0">
-        <table class="table table-hover mb-0">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>User</th>
-                    <th>Role</th>
-                    <th>Action</th>
-                    <th>Description</th>
-                    <th>Date & Time</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($logs as $log)
-                <tr>
-                    <td style="color:#9b59b6;font-size:0.8rem;">{{ $log->id }}</td>
-                    <td><strong>{{ $log->user_name ?? '—' }}</strong></td>
-                    <td>
-                        <span class="role-badge role-{{ $log->user_role ?? 'user' }}">
-                            {{ ucfirst($log->user_role ?? '—') }}
-                        </span>
-                    </td>
-                    <td>
-                        <span class="action-badge action-{{ $log->action }}">
-                            {{ ucwords(str_replace('_', ' ', $log->action)) }}
-                        </span>
-                    </td>
-                    <td style="font-size:0.85rem;color:#374151;">{{ $log->description }}</td>
-                    <td style="font-size:0.82rem;color:#374151;">
-                        <div>{{ $log->created_at->format('M d, Y') }}</div>
-                        <div style="font-size:0.75rem;color:#9b59b6;">{{ $log->created_at->format('g:i A') }}</div>
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="6" class="text-center py-5 text-muted">
-                        <i class="fas fa-clipboard fa-2x mb-2 d-block" style="color:#ce93d8;"></i>
-                        No activity logs found.
-                    </td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-</div>
-
+<div class="activity-page">
+<div class="d-flex justify-content-between align-items-center mb-4 activity-heading"><div><h2 class="activity-title mb-1"><i class="fas fa-clipboard-list me-2"></i>Activity Logs</h2><div class="activity-subtitle">Audit trail of account and reservation activity.</div></div><span class="px-3 py-2 rounded-pill" style="background:#f3e8ff;color:#6b21a8;font-size:.82rem;font-weight:700;"><i class="fas fa-list-check me-1"></i>{{ number_format($logs->total()) }} records</span></div>
+<div class="filter-card"><form method="GET" action="{{ route('admin.activity-logs.index') }}" class="row g-2 align-items-end"><div class="col-md-5"><label class="filter-label">Search user</label><input type="text" name="search" value="{{ request('search') }}" class="form-control" placeholder="Type a name..."></div><div class="col-md-4"><label class="filter-label">Filter by action</label><select name="action" class="form-select"><option value="">All actions</option>@foreach(['login'=>'Login','logout'=>'Logout','register'=>'Register','reservation_created'=>'Reservation Created','reservation_cancelled'=>'Reservation Cancelled','reservation_confirmed'=>'Reservation Confirmed','reservation_completed'=>'Reservation Completed','reservation_deleted'=>'Reservation Deleted','reservation_status_updated'=>'Status Updated','receipt_printed'=>'Receipt Printed','profile_updated'=>'Profile Updated'] as $value=>$label)<option value="{{ $value }}" {{ request('action')===$value?'selected':'' }}>{{ $label }}</option>@endforeach</select></div><div class="col-md-3 d-flex gap-2"><button class="btn text-white flex-fill" style="min-height:40px;background:linear-gradient(135deg,#4a0080,#7b2ff7);border-radius:9px;font-weight:700;"><i class="fas fa-search me-1"></i>Filter</button><a href="{{ route('admin.activity-logs.index') }}" class="btn flex-fill" style="min-height:40px;border:1px solid #ce93d8;color:#7b2ff7;border-radius:9px;font-weight:700;"><i class="fas fa-times me-1"></i>Clear</a></div></form></div>
+<div class="logs-card"><div class="logs-head d-flex justify-content-between align-items-center"><strong style="color:#2d0a4e;font-size:.95rem;"><i class="fas fa-clock-rotate-left me-2" style="color:#7b2ff7;"></i>Latest activity</strong><span style="color:#8b7a9d;font-size:.76rem;">Newest first</span></div><div class="table-responsive"><table class="table logs-table"><thead><tr><th>#</th><th>User</th><th>Role</th><th>Action</th><th>Description</th><th>Date & Time</th></tr></thead><tbody>
+@forelse($logs as $log)<tr><td style="color:#9b59b6;font-size:.8rem;font-weight:700;">#{{ $log->id }}</td><td><div class="log-user"><span class="log-avatar">{{ strtoupper(substr($log->user_name ?? '?',0,1)) }}</span><strong>{{ $log->user_name ?? '—' }}</strong></div></td><td><span class="role-badge role-{{ $log->user_role ?? 'user' }}">{{ ucfirst($log->user_role ?? '—') }}</span></td><td><span class="action-badge action-{{ $log->action }}">{{ ucwords(str_replace('_',' ',$log->action)) }}</span></td><td><div class="log-description">{{ $log->description }}</div></td><td class="log-date"><div>{{ $log->created_at->format('M d, Y') }}</div><div class="log-time"><i class="fas fa-clock me-1"></i>{{ $log->created_at->format('g:i A') }}</div></td></tr>
+@empty<tr><td colspan="6" class="text-center py-5 text-muted"><i class="fas fa-clipboard fa-2x mb-2 d-block" style="color:#ce93d8;"></i>No activity logs found.</td></tr>@endforelse
+</tbody></table></div></div>
 @if($logs->hasPages())
-<div class="d-flex justify-content-between align-items-center mt-4" style="font-size:0.85rem;">
-    <span style="color:#9b59b6;">
-        Showing {{ $logs->firstItem() }}–{{ $logs->lastItem() }} of {{ $logs->total() }} records
-    </span>
-    <div class="d-flex gap-1">
+<div class="pagination-wrap">
+    <span>Showing {{ $logs->firstItem() }}–{{ $logs->lastItem() }} of {{ $logs->total() }} records</span>
+    <div class="pagination-links">
         @if($logs->onFirstPage())
-            <span style="background:#f5f0ff;color:#d1d5db;padding:6px 14px;border-radius:8px;font-weight:600;">← Prev</span>
+            <span class="page-link-custom disabled">Previous</span>
         @else
-            <a href="{{ $logs->previousPageUrl() }}" style="background:#ede7f6;color:#4a0080;padding:6px 14px;border-radius:8px;font-weight:600;text-decoration:none;">← Prev</a>
+            <a href="{{ $logs->previousPageUrl() }}" class="page-link-custom">Previous</a>
         @endif
-
-        @foreach($logs->getUrlRange(1, $logs->lastPage()) as $page => $url)
-            @if($page == $logs->currentPage())
-                <span style="background:linear-gradient(135deg,#4a0080,#7b2ff7);color:white;padding:6px 12px;border-radius:8px;font-weight:700;">{{ $page }}</span>
-            @else
-                <a href="{{ $url }}" style="background:#f5f0ff;color:#4a0080;padding:6px 12px;border-radius:8px;font-weight:600;text-decoration:none;">{{ $page }}</a>
-            @endif
-        @endforeach
-
+        <span class="page-link-custom current">Page {{ $logs->currentPage() }} / {{ $logs->lastPage() }}</span>
         @if($logs->hasMorePages())
-            <a href="{{ $logs->nextPageUrl() }}" style="background:#ede7f6;color:#4a0080;padding:6px 14px;border-radius:8px;font-weight:600;text-decoration:none;">Next →</a>
+            <a href="{{ $logs->nextPageUrl() }}" class="page-link-custom">Next</a>
         @else
-            <span style="background:#f5f0ff;color:#d1d5db;padding:6px 14px;border-radius:8px;font-weight:600;">Next →</span>
+            <span class="page-link-custom disabled">Next</span>
         @endif
     </div>
 </div>
 @endif
+</div>
 @endsection

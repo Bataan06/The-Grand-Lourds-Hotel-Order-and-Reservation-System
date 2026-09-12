@@ -61,7 +61,7 @@
     <div class="pkg-body">
         {{-- Col 1: Price Buttons --}}
         <div class="pkg-col">
-            <div class="col-label">💰 Price/Pax</div>
+            <div class="col-label"> Price/Pax</div>
             @foreach($prices as $si => $price)
             <button class="price-btn {{ $si===0 ? 'active' : '' }}"
                 onclick="selectPriceTier('p{{ $pi }}', '{{ $price }}', this)">
@@ -75,7 +75,7 @@
 
         {{-- Col 2: Inclusions --}}
         <div class="pkg-col">
-            <div class="col-label">✅ Package Inclusions</div>
+            <div class="col-label"> Package Inclusions</div>
             @foreach($package->amenities as $amenity)
                 <div class="amenity-item">
                     <i class="fas fa-check" style="color:#7b2ff7;font-size:0.7rem;margin-top:3px;flex-shrink:0;"></i>
@@ -88,7 +88,7 @@
 
         {{-- Col 3: Menu Sets per price --}}
         <div class="pkg-col">
-            <div class="col-label">🍽️ Food Menu Sets</div>
+            <div class="col-label"> Food Menu Sets</div>
             @foreach($prices as $si => $price)
             @php $sets = $tiers[$price]; @endphp
             <div class="price-panel {{ $si===0 ? 'active' : '' }}" id="p{{ $pi }}-tier-{{ $price }}">
